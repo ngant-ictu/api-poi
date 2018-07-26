@@ -1,0 +1,12 @@
+
+type Mutation {
+    importPoi: String!
+}
+
+type Mutation {
+    importEntity: Int!
+}
+
+type Query {
+    testPlace(name: String): JSON!
+}

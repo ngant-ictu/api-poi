@@ -1,0 +1,22 @@
+---
+
+prefix: _olli_poi_
+locales:
+  en-us
+  vi-vn
+timezone: Asia/Ho_Chi_Minh
+cache:
+  lifetime: 86400
+  cacheDir: app/storage/cache/data/
+users:
+  directory: app/storage/files/users/
+  minsize: 100
+  maxsize: 10000000
+  isoverwrite: false
+  thumbsize: 300x200
+  mediumsize: 540x100
+  fullsize: 1200x1200
+  mimes:
+    image/jpeg
+    image/jpg
+    image/png
