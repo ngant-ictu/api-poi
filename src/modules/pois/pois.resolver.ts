@@ -6,12 +6,15 @@ import { PoiInfoService } from './info.service';
 import { RegionsService } from '../regions/regions.service';
 import { PoiOpeningHoursService } from './opening_hours.service';
 import { PoiTypeService } from './type.service';
+import { PoiType } from '../../entities/poi_type.entity';
 import * as GoogleMaps from '@google/maps';
 import * as slug from 'slug';
 import * as fs from 'fs';
 import * as xlsx from 'node-xlsx';
 import { dump } from '../../helpers/dump';
 import { findAllChildProperties, findItem } from '../../helpers/adj';
+import { plainToClass } from 'class-transformer';
+import { PoiTypeTransformInterceptor } from '../../interceptors/poi_type-transform.interceptor';
 
 @Resolver('Poi')
 @UseGuards(AuthGuard)
@@ -24,7 +27,7 @@ export class PoisResolver {
     ) {}
 
     @Mutation('importPoi')
-    @Roles('administrator')
+    @Roles('isSuperUser')
     async importFromOctoparse() {
         let count: number = 0;
         const googleMapsClient = GoogleMaps.createClient({
@@ -224,9 +227,9 @@ export class PoisResolver {
         return count;
     }
 
-    @Mutation('importEntity')
-    @Roles('administrator')
-    async importEntity() {
+    @Mutation('importPoiType')
+    @Roles('isSuperUser')
+    async importPoiType() {
         let count: number = 0;
 
         const workSheetsFromFile = xlsx.parse(`${process.cwd()}/src/storage/data/entity.xlsx`);
@@ -254,13 +257,13 @@ export class PoisResolver {
             })
         );
 
-        console.log('TOTAL ENTITY IMPORTED: ' + count);
+        console.log('TOTAL POI TYPE IMPORTED: ' + count);
 
         return count;
     }
 
     @Query('testPlace')
-    @Roles('administrator')
+    @Roles('isSuperUser')
     async testPlace(_: any, { name }) {
         let output: any = [];
 
@@ -297,6 +300,37 @@ export class PoisResolver {
         );
 
         return output;
+    }
+
+    @Query('getPoiTypes')
+    @Roles('isSuperUser')
+    @UseInterceptors(new PoiTypeTransformInterceptor())
+    async getPoiTypes(_: any, { opts }) {
+        try {
+            const myPoiTypes = await this.poiTypeService.findAll({
+                curPage: opts.curPage,
+                perPage: opts.perPage,
+                q: opts.q,
+                sort: opts.sort
+            });
+            return {
+                types: plainToClass(PoiType, myPoiTypes.types),
+                meta: myPoiTypes.meta
+            };
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @Mutation('updatePoiTypeSimilar')
+    @Roles('isSuperUser')
+    @UseInterceptors(new PoiTypeTransformInterceptor())
+    async updatePoiTypeSimilar(_: any, { id, input }) {
+        try {
+            return await this.poiTypeService.updateSimilar(id, input.similar);
+        } catch (error) {
+            throw error;
+        }
     }
 
     private static parseAddr(addressComponent: any) {

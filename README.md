@@ -57,6 +57,14 @@
 }
 `
 
+# Upload file with GraphQL example curl
+
+`
+	curl localhost:9000/graphql \
+	-F operations='{ "query": "mutation ($file: Upload!) { singleUpload(file: $file) { id } }", "variables": { "file": null } }' \
+	-F map='{ "0": ["variables.file"] }' \ -F 0=@prosody.txt
+
+`
 
 # Mysql to Elasticsearch
 

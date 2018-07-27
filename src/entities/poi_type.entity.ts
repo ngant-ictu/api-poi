@@ -21,8 +21,8 @@ export class PoiType extends BaseEntity {
     @Column({ name: 'pt_name' })
     name: string;
 
-    @Column({ name: 'pt_similiar' })
-    similiar: string;
+    @Column({ name: 'pt_similar' })
+    similar: string;
 
     @Column({ name: 'pt_date_created' })
     dateCreated: number;

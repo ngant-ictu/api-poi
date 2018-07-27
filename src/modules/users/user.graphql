@@ -1,6 +1,13 @@
 scalar JSON
 scalar Upload
 
+type PaginationMeta {
+  curPage: Int!,
+  perPage: Int!,
+  totalPages: Int!,
+  totalResults: Int!
+}
+
 type File {
   id: ID!
   path: String!
@@ -21,15 +28,8 @@ type User {
   dateModified: Int
 }
 
-type PaginationMeta {
-  curPage: Int!,
-  perPage: Int!,
-  totalPages: Int!,
-  totalResults: Int!
-}
-
 type Users {
-  users: [User],
+  users: [User]
   meta: PaginationMeta!
 }
 

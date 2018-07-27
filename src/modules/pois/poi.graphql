@@ -1,12 +1,22 @@
+type PoiType {
+  id: Int!
+  name: String
+  similar: [String!]
+  dateCreated: JSON
+}
 
-type Mutation {
-    importPoi: String!
+type PoiTypes {
+  types: [PoiType]
+  meta: PaginationMeta!
 }
 
 type Mutation {
-    importEntity: Int!
+  importPoi: String!
+  importPoiType: Int!
+  updatePoiTypeSimilar(id: Int!, input: JSON!): PoiType!
 }
 
 type Query {
-    testPlace(name: String): JSON!
+  testPlace(name: String): JSON!
+  getPoiTypes(opts: JSON!): PoiTypes
 }

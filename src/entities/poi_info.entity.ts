@@ -29,8 +29,8 @@ export class PoiInfo extends BaseEntity {
     @Column({ name: 'pi_name' })
     name: string;
 
-    @Column({ name: 'pi_similiar' })
-    similiar: string;
+    @Column({ name: 'pi_similar' })
+    similar: string;
 
     @Column({ name: 'pi_number' })
     number: string;
