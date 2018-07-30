@@ -1,3 +1,8 @@
+type Region {
+  id: Int!
+  name: String
+}
+
 type Mutation {
     importRegion: Int!
 }

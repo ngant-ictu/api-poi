@@ -15,6 +15,8 @@ import { dump } from '../../helpers/dump';
 import { findAllChildProperties, findItem } from '../../helpers/adj';
 import { plainToClass } from 'class-transformer';
 import { PoiTypeTransformInterceptor } from '../../interceptors/poi_type-transform.interceptor';
+import { PoiInfoTransformInterceptor } from '../../interceptors/poi_info-transform.interceptor';
+import { PoiInfo } from '../../entities/poi_info.entity';
 
 @Resolver('Poi')
 @UseGuards(AuthGuard)
@@ -314,7 +316,7 @@ export class PoisResolver {
                 sort: opts.sort
             });
             return {
-                types: plainToClass(PoiType, myPoiTypes.types),
+                items: plainToClass(PoiType, myPoiTypes.items),
                 meta: myPoiTypes.meta
             };
         } catch (error) {
@@ -332,6 +334,39 @@ export class PoisResolver {
             throw error;
         }
     }
+
+    @Mutation('removePoiTypeSimilarItem')
+    @Roles('isSuperUser')
+    @UseInterceptors(new PoiTypeTransformInterceptor())
+    async removePoiTypeSimilarItem(_: any, { id, input }) {
+        try {
+            return await this.poiTypeService.removeSimilarItem(id, input);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @Query('getPoiInfos')
+    @Roles('isSuperUser')
+    @UseInterceptors(new PoiInfoTransformInterceptor())
+    async getPoiInfos(_: any, { opts })     {
+        try {
+            const myPoiInfos = await this.poiInfoService.findAll({
+                curPage: opts.curPage,
+                perPage: opts.perPage,
+                q: opts.q,
+                sort: opts.sort
+            });
+            return {
+                items: plainToClass(PoiInfo, myPoiInfos.items),
+                meta: myPoiInfos.meta
+            };
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    ///////////////// FUNCTION //////////////////
 
     private static parseAddr(addressComponent: any) {
         const streetNumber = addressComponent

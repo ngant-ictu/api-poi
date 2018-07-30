@@ -44,7 +44,7 @@ export class PoiTypeService {
             objects = await qb.getManyAndCount();
 
             return {
-                types: objects[0],
+                items: objects[0],
                 meta: {
                     curPage: options.curPage,
                     perPage: options.perPage,
@@ -70,13 +70,28 @@ export class PoiTypeService {
             let newSimilarArr = [];
             const myPoiType = await this.typeRepository.findOneOrFail(id);
             const oldSimilar = await myPoiType.similar.split(',').map(s => { return newSimilarArr.push(s) });
-            const newSimilar = await similar.split(',').map(s => { return newSimilarArr.push(s) })
+            const newSimilar = await similar.split(',').map(s => { return newSimilarArr.push(s.trim()) })
             await Promise.all([
                 oldSimilar,
                 newSimilar
             ]);
 
             myPoiType.similar = newSimilarArr.join(',');
+
+            return await this.typeRepository.save(myPoiType);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async removeSimilarItem(id: number, similar: any) {
+        try {
+            let myPoiType = await this.typeRepository.findOneOrFail(id);
+
+            let similarArr = myPoiType.similar.split(',');
+            const index = similarArr.findIndex(similarName => similarName === similar.similarItem);
+            similarArr.splice(index, 1);
+            myPoiType.similar = similarArr.join(',');
 
             return await this.typeRepository.save(myPoiType);
         } catch (error) {

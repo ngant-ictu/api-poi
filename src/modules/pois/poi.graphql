@@ -5,8 +5,32 @@ type PoiType {
   dateCreated: JSON
 }
 
+type PoiInfo {
+  type: PoiType
+  id: Int!
+  name: String
+  similar: [String]
+  number: String
+  street: String
+  ward: Region
+  district: Region
+  city: Region
+  lat: Float
+  lng: Float
+  website: String
+  phoneNumber: String
+  rating: Float
+  ggFullAddress: String
+  dateCreated: JSON
+}
+
 type PoiTypes {
-  types: [PoiType]
+  items: [PoiType]
+  meta: PaginationMeta!
+}
+
+type PoiInfos {
+  items: [PoiInfo]
   meta: PaginationMeta!
 }
 
@@ -14,9 +38,11 @@ type Mutation {
   importPoi: String!
   importPoiType: Int!
   updatePoiTypeSimilar(id: Int!, input: JSON!): PoiType!
+  removePoiTypeSimilarItem(id: Int!, input: JSON!): PoiType!
 }
 
 type Query {
   testPlace(name: String): JSON!
   getPoiTypes(opts: JSON!): PoiTypes
+  getPoiInfos(opts: JSON!): PoiInfos
 }

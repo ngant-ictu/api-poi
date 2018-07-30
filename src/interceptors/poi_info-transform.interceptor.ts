@@ -8,16 +8,16 @@ export interface Response<T> {
 }
 
 @Injectable()
-export class PoiTypeTransformInterceptor<T>
+export class PoiInfoTransformInterceptor<T>
     implements NestInterceptor<T, Response<T>> {
     intercept(
         context: ExecutionContext,
         call$: Observable<T>,
     ): Observable<any> {
         return call$.pipe(
-            tap(async (data) => {
+            tap(data => {
                 if (typeof data.items !== 'undefined') {
-                    data.items.map(poiType => this._transform(poiType));
+                    data.items.map(async poiInfo => await this._transform(poiInfo))
                 } else {
                     data = this._transform(data);
                 }
@@ -27,14 +27,14 @@ export class PoiTypeTransformInterceptor<T>
         );
     }
 
-    private _transform(poiType) {
-        if (poiType.similar !== null) {
-            poiType.similar = poiType.similar.split(',');
+    private async _transform(poiInfo) {
+        if (poiInfo.similar !== null) {
+            poiInfo.similar = poiInfo.similar.split(',');
         }
 
-        poiType.dateCreated = {
-            readable: moment.unix(poiType.dateCreated).format('MMM Do YYYY'),
-            timestamp: poiType.dateCreated
+        poiInfo.dateCreated = {
+            readable: moment.unix(poiInfo.dateCreated).format('MMM Do YYYY'),
+            timestamp: poiInfo.dateCreated
         }
     }
 }
