@@ -1,29 +1,25 @@
-import { Injectable, NestInterceptor, ExecutionContext } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import * as moment from 'moment';
+import { Injectable, NestInterceptor, ExecutionContext } from "@nestjs/common";
+import { Observable } from "rxjs";
+import { tap } from "rxjs/operators";
+import * as moment from "moment";
 
 export interface Response<T> {
     data: T;
 }
 
 @Injectable()
-export class UserTransformInterceptor<T>
-    implements NestInterceptor<T, Response<T>> {
-    intercept(
-        context: ExecutionContext,
-        call$: Observable<T>,
-    ): Observable<any> {
+export class UserTransformInterceptor<T> implements NestInterceptor<T, Response<T>> {
+    intercept(context: ExecutionContext, call$: Observable<T>): Observable<any> {
         return call$.pipe(
-            tap(async (data) => {
-                if (typeof data.users !== 'undefined') {
+            tap(async data => {
+                if (typeof data.users !== "undefined") {
                     data.users.map(user => this._transform(user));
                 } else {
                     data = this._transform(data);
                 }
 
                 return data;
-            }),
+            })
         );
     }
 
@@ -33,8 +29,8 @@ export class UserTransformInterceptor<T>
             value: user.status
         };
         user.dateCreated = {
-            readable: moment.unix(user.dateCreated).format('MMM Do YYYY'),
+            readable: moment.unix(user.dateCreated).format("MMM Do YYYY"),
             timestamp: user.dateCreated
-        }
+        };
     }
 }

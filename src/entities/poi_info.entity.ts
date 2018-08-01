@@ -8,12 +8,12 @@ import {
     BeforeInsert,
     BeforeUpdate,
     BaseEntity
-} from 'typeorm';
-import { IsNotEmpty } from 'class-validator';
+} from "typeorm";
+import { IsNotEmpty } from "class-validator";
 // import { IsPoiAlreadyExist } from './validators/poi_info.is-already-exist';
-import { PoiOpeningHours } from './poi_opening_hours.entity';
-import { Region } from './region.entity';
-import { PoiType } from './poi_type.entity';
+import { PoiOpeningHours } from "./poi_opening_hours.entity";
+import { Region } from "./region.entity";
+import { PoiType } from "./poi_type.entity";
 
 enum Status {
     ACTIVE = <number>1,

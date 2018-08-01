@@ -7,38 +7,38 @@ import {
     BeforeInsert,
     BeforeUpdate,
     BaseEntity
-} from 'typeorm';
-import { IsNotEmpty, IsInt } from 'class-validator';
-import { PoiInfo } from './poi_info.entity';
+} from "typeorm";
+import { IsNotEmpty, IsInt } from "class-validator";
+import { PoiInfo } from "./poi_info.entity";
 
-@Entity({ name: 'poi_opening_hours' })
+@Entity({ name: "poi_opening_hours" })
 export class PoiOpeningHours extends BaseEntity {
-    @PrimaryGeneratedColumn({ name: 'poh_id' })
+    @PrimaryGeneratedColumn({ name: "poh_id" })
     id: number;
 
     @IsNotEmpty()
-    @Column({ name: 'pi_id' })
+    @Column({ name: "pi_id" })
     piid: number;
 
     @IsNotEmpty()
-    @Column({ name: 'poh_open' })
+    @Column({ name: "poh_open" })
     open: string;
 
-    @Column({ name: 'poh_close' })
+    @Column({ name: "poh_close" })
     close: string;
 
-    @Column({ name: 'poh_day' })
+    @Column({ name: "poh_day" })
     day: number;
 
-    @Column({ name: 'poh_date_created' })
+    @Column({ name: "poh_date_created" })
     dateCreated: number;
 
-    @Column({ name: 'poh_date_modified' })
+    @Column({ name: "poh_date_modified" })
     dateModified: number;
 
     // Relation n hours of 1 poi
     @ManyToOne(type => PoiInfo, poi => poi.openingHours)
-    @JoinColumn({ name: 'pi_id' })
+    @JoinColumn({ name: "pi_id" })
     poi: PoiInfo;
 
     @BeforeInsert()

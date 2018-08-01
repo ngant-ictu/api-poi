@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { Repository, Brackets } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Region } from '../../entities/region.entity';
+import { Injectable } from "@nestjs/common";
+import { Repository, Brackets } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Region } from "../../entities/region.entity";
 
 @Injectable()
 export class RegionsService {
@@ -15,39 +15,39 @@ export class RegionsService {
 
     async findCityByName(cityName: string) {
         return await this.regionRepository
-            .createQueryBuilder('r')
-            .where('r.name = :name1', { name1: `${cityName}` })
-            .orWhere('r.name = :name2', { name2: `Thành phố ${cityName}` })
-            .orWhere('r.name = :name3', { name3: `Thành Phố ${cityName}` })
-            .orWhere('r.name = :name3', { name3: `Tỉnh ${cityName}` })
-            .orWhere('r.name = :name3', { name3: `tỉnh ${cityName}` })
+            .createQueryBuilder("r")
+            .where("r.name = :name1", { name1: `${cityName}` })
+            .orWhere("r.name = :name2", { name2: `Thành phố ${cityName}` })
+            .orWhere("r.name = :name3", { name3: `Thành Phố ${cityName}` })
+            .orWhere("r.name = :name3", { name3: `Tỉnh ${cityName}` })
+            .orWhere("r.name = :name3", { name3: `tỉnh ${cityName}` })
             .getOne();
     }
 
     async findDistrictByName(districtName: string) {
         return await this.regionRepository
-            .createQueryBuilder('r')
-            .where('r.name = :name1', { name1: `${districtName}` })
-            .orWhere('r.name = :name2', { name2: `Quận ${districtName}` })
-            .orWhere('r.name = :name3', { name3: `Huyện ${districtName}` })
+            .createQueryBuilder("r")
+            .where("r.name = :name1", { name1: `${districtName}` })
+            .orWhere("r.name = :name2", { name2: `Quận ${districtName}` })
+            .orWhere("r.name = :name3", { name3: `Huyện ${districtName}` })
             .getOne();
     }
 
     async findWardByName(wardName: string, districtId: number) {
         return await this.regionRepository
-            .createQueryBuilder('r')
-            .where('r.parent = :districtId', { districtId: districtId })
+            .createQueryBuilder("r")
+            .where("r.parent = :districtId", { districtId: districtId })
             .andWhere(
                 new Brackets(qb => {
-                    qb.where('r.name = :name1', { name1: `${wardName}` })
-                        .orWhere('r.name = :name2', {
+                    qb.where("r.name = :name1", { name1: `${wardName}` })
+                        .orWhere("r.name = :name2", {
                             name2: `Phường ${wardName}`
                         })
-                        .orWhere('r.name = :name3', { name3: `Xã ${wardName}` })
-                        .orWhere('r.name = :name4', {
+                        .orWhere("r.name = :name3", { name3: `Xã ${wardName}` })
+                        .orWhere("r.name = :name4", {
                             name4: `Thị Xã ${wardName}`
                         })
-                        .orWhere('r.name = :name5', {
+                        .orWhere("r.name = :name5", {
                             name5: `Thị xã ${wardName}`
                         });
                 })

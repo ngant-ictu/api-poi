@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UserException } from '../../filters/error/user-exception.error';
-import { User } from '../../entities/user.entity';
-import { ConfigService } from '../config.service';
-import { TokenService } from './token.service';
+import { Injectable } from "@nestjs/common";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { UserException } from "../../filters/error/user-exception.error";
+import { User } from "../../entities/user.entity";
+import { ConfigService } from "../config.service";
+import { TokenService } from "./token.service";
 
 @Injectable()
 export class AuthService {
@@ -32,7 +32,7 @@ export class AuthService {
         const matchedPassword = await myUser.comparePassword(credentials.password);
 
         if (!myUser || matchedPassword === false) {
-            throw new UserException('auth:login:passwordNotMatch');
+            throw new UserException("auth:login:passwordNotMatch");
         }
 
         return {

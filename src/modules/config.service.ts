@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import * as convict from 'convict';
+import { Injectable } from "@nestjs/common";
+import * as convict from "convict";
 
 @Injectable()
 export class ConfigService {

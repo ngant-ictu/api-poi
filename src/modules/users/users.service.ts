@@ -1,47 +1,40 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../../entities/user.entity';
-import { plainToClass } from 'class-transformer';
-import { UserException } from '../../filters/error/user-exception.error';
+import { Injectable, BadRequestException } from "@nestjs/common";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "../../entities/user.entity";
+import { plainToClass } from "class-transformer";
+import { UserException } from "../../filters/error/user-exception.error";
 
 @Injectable()
 export class UsersService {
-    constructor(
-        @InjectRepository(User) private readonly userRepository: Repository<User>,
-    ) {}
+    constructor(@InjectRepository(User) private readonly userRepository: Repository<User>) {}
 
-    async findAll(options: {
-        curPage: number;
-        perPage: number;
-        q?: string;
-        group?: number;
-        sort?: string;
-    }) {
+    async findAll(options: { curPage: number; perPage: number; q?: string; group?: number; sort?: string }) {
         try {
             let objects: [User[], number];
-            let qb = this.userRepository.createQueryBuilder('user');
+            let qb = this.userRepository.createQueryBuilder("user");
 
             if (options.q) {
-                qb = qb.where('user.fullName like :q or user.email like :q or user.id = :id', {
-                    q: `%${options.q}%`, id: options.q
+                qb = qb.where("user.fullName like :q or user.email like :q or user.id = :id", {
+                    q: `%${options.q}%`,
+                    id: options.q
                 });
             }
 
             // sort
-            options.sort = options.sort && (new User()).hasOwnProperty(options.sort.replace('-', '')) ? options.sort : '-id';
-            const field = options.sort.replace('-', '');
+            options.sort =
+                options.sort && new User().hasOwnProperty(options.sort.replace("-", "")) ? options.sort : "-id";
+            const field = options.sort.replace("-", "");
             if (options.sort) {
-                if (options.sort[0] === '-') {
-                    qb = qb.addOrderBy('user.' + field, 'DESC');
+                if (options.sort[0] === "-") {
+                    qb = qb.addOrderBy("user." + field, "DESC");
                 } else {
-                    qb = qb.addOrderBy('user.' + field, 'ASC');
+                    qb = qb.addOrderBy("user." + field, "ASC");
                 }
             }
 
             // offset & limit
-            qb = qb.skip((options.curPage - 1) * options.perPage)
-                .take(options.perPage);
+            qb = qb.skip((options.curPage - 1) * options.perPage).take(options.perPage);
 
             // run query
             objects = await qb.getManyAndCount();
@@ -64,7 +57,7 @@ export class UsersService {
         try {
             return await this.userRepository.findOneOrFail(id);
         } catch (error) {
-            throw new UserException('user:notFound');
+            throw new UserException("user:notFound");
         }
     }
 
@@ -73,7 +66,7 @@ export class UsersService {
             const myUser = this.userRepository.create(item);
             return await this.userRepository.save(myUser);
         } catch (error) {
-            throw new UserException('user:create:fail');
+            throw new UserException("user:create:fail");
         }
     }
 

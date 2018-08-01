@@ -1,24 +1,26 @@
-import { UseInterceptors, UseGuards, BadRequestException } from '@nestjs/common';
-import { Resolver, Query, Mutation } from '@nestjs/graphql';
-import { AuthGuard } from '../../guards/auth.guard';
-import { Roles } from '../../decorators/roles.decorator';
-import { PoiInfoService } from './info.service';
-import { RegionsService } from '../regions/regions.service';
-import { PoiOpeningHoursService } from './opening_hours.service';
-import { PoiTypeService } from './type.service';
-import { PoiType } from '../../entities/poi_type.entity';
-import * as GoogleMaps from '@google/maps';
-import * as slug from 'slug';
-import * as fs from 'fs';
-import * as xlsx from 'node-xlsx';
-import { dump } from '../../helpers/dump';
-import { findAllChildProperties, findItem } from '../../helpers/adj';
-import { plainToClass } from 'class-transformer';
-import { PoiTypeTransformInterceptor } from '../../interceptors/poi_type-transform.interceptor';
-import { PoiInfoTransformInterceptor } from '../../interceptors/poi_info-transform.interceptor';
-import { PoiInfo } from '../../entities/poi_info.entity';
+import { UseInterceptors, UseGuards, BadRequestException } from "@nestjs/common";
+import { Resolver, Query, Mutation } from "@nestjs/graphql";
+import { AuthGuard } from "../../guards/auth.guard";
+import { Roles } from "../../decorators/roles.decorator";
+import { PoiInfoService } from "./info.service";
+import { RegionsService } from "../regions/regions.service";
+import { PoiOpeningHoursService } from "./opening_hours.service";
+import { PoiTypeService } from "./type.service";
+import { PoiType } from "../../entities/poi_type.entity";
+import * as GoogleMaps from "@google/maps";
+import * as slug from "slug";
+import * as fs from "fs";
+import * as xlsx from "node-xlsx";
+import { dump } from "../../helpers/dump";
+import * as bodybuilder from "bodybuilder";
+import { findAllChildProperties, findItem } from "../../helpers/adj";
+import { plainToClass } from "class-transformer";
+import { PoiTypeTransformInterceptor } from "../../interceptors/poi_type-transform.interceptor";
+import { PoiTypeSearchTransformInterceptor } from "../../interceptors/poi_type-search-transform.interceptor";
+import { PoiInfoTransformInterceptor } from "../../interceptors/poi_info-transform.interceptor";
+import { PoiInfo } from "../../entities/poi_info.entity";
 
-@Resolver('Poi')
+@Resolver("Poi")
 @UseGuards(AuthGuard)
 export class PoisResolver {
     constructor(
@@ -28,8 +30,8 @@ export class PoisResolver {
         private readonly poiTypeService: PoiTypeService
     ) {}
 
-    @Mutation('importPoi')
-    @Roles('isSuperUser')
+    @Mutation("importPoi")
+    @Roles("isSuperUser")
     async importFromOctoparse() {
         let count: number = 0;
         const googleMapsClient = GoogleMaps.createClient({
@@ -46,15 +48,15 @@ export class PoisResolver {
             where: {
                 parent: 0
             },
-            relations: ['children'],
+            relations: ["children"],
             cache: true
         });
 
         let districtAndCityExclude = [];
         const cityList = myRegions.map(r => r.id);
         cityList.map(cityId => {
-            const root = findItem(myRegions, 'id', cityId);
-            let kids = findAllChildProperties(root.children, 'children', 'name');
+            const root = findItem(myRegions, "id", cityId);
+            let kids = findAllChildProperties(root.children, "children", "name");
             districtAndCityExclude = districtAndCityExclude.concat(kids);
         });
 
@@ -72,7 +74,7 @@ export class PoisResolver {
                     responseSearch = await googleMapsClient
                         .places({
                             query: item[0],
-                            language: 'vi'
+                            language: "vi"
                         })
                         .asPromise();
 
@@ -84,7 +86,7 @@ export class PoisResolver {
                     //   }).asPromise();
                     // }
 
-                    let international_phone_number = '';
+                    let international_phone_number = "";
 
                     // May be gg place return more than 1 record
                     responseSearch.json.results.map(async place => {
@@ -94,11 +96,11 @@ export class PoisResolver {
                         const responsePlace = await googleMapsClient
                             .place({
                                 placeid: place.place_id,
-                                language: 'vi'
+                                language: "vi"
                             })
                             .asPromise();
 
-                        if (typeof responsePlace.json.result.international_phone_number !== 'undefined') {
+                        if (typeof responsePlace.json.result.international_phone_number !== "undefined") {
                             international_phone_number = responsePlace.json.result.international_phone_number;
                         }
 
@@ -117,20 +119,20 @@ export class PoisResolver {
                         // reject if not in Vietnam +84
                         if (
                             international_phone_number.match(/\+84\s?\d+/g) !== null ||
-                            international_phone_number === ''
+                            international_phone_number === ""
                         ) {
                             let parsedAddr = await PoisResolver.parseAddr(address_components);
                             // console.log(formatted_address);
 
                             // find ward if not in gg data
-                            if (parsedAddr.wardName === '') {
+                            if (parsedAddr.wardName === "") {
                                 const wardRe = new RegExp(
-                                    '(?:Phường|Xã)s?((?!' + districtAndCityExclude.join('|') + ').)+,',
-                                    'g'
+                                    "(?:Phường|Xã)s?((?!" + districtAndCityExclude.join("|") + ").)+,",
+                                    "g"
                                 ); // Need get end commas to parse with address not match
                                 const wardMatches = formatted_address.match(wardRe);
                                 if (wardMatches !== null) {
-                                    const matchesArr = wardMatches[0].split(',');
+                                    const matchesArr = wardMatches[0].split(",");
                                     parsedAddr.wardName = matchesArr[0];
                                 }
                             }
@@ -153,33 +155,33 @@ export class PoisResolver {
 
                             // get district & ward follow by district
                             const myDistrict = await this.regionsService.findDistrictByName(parsedAddr.districtName);
-                            if (typeof myDistrict !== 'undefined') {
-                                poiDataToWrite['district'] = myDistrict.id;
+                            if (typeof myDistrict !== "undefined") {
+                                poiDataToWrite["district"] = myDistrict.id;
 
                                 const myWard = await this.regionsService.findWardByName(
                                     parsedAddr.wardName,
                                     myDistrict.id
                                 );
-                                if (typeof myWard !== 'undefined') {
-                                    poiDataToWrite['ward'] = myWard.id;
+                                if (typeof myWard !== "undefined") {
+                                    poiDataToWrite["ward"] = myWard.id;
                                 }
                             }
 
                             // get city
                             const myCity = await this.regionsService.findCityByName(parsedAddr.cityName);
-                            if (typeof myCity !== 'undefined') {
-                                poiDataToWrite['city'] = myCity.id;
+                            if (typeof myCity !== "undefined") {
+                                poiDataToWrite["city"] = myCity.id;
                             } else {
                                 // get city from parent id of district
-                                if (typeof myDistrict !== 'undefined') {
-                                    poiDataToWrite['city'] = myDistrict.parent;
+                                if (typeof myDistrict !== "undefined") {
+                                    poiDataToWrite["city"] = myDistrict.parent;
                                 }
                             }
 
                             // get google map id https://maps.google.com/?cid=<ggMapId>
                             const ggMapMatches = url.match(/cid=(\d+)/i);
                             if (ggMapMatches !== null) {
-                                poiDataToWrite['ggMapId'] = ggMapMatches[1];
+                                poiDataToWrite["ggMapId"] = ggMapMatches[1];
                             }
 
                             try {
@@ -188,16 +190,16 @@ export class PoisResolver {
                                 count++;
 
                                 // get opening hours
-                                if (typeof opening_hours !== 'undefined') {
+                                if (typeof opening_hours !== "undefined") {
                                     if (
                                         opening_hours.periods.length === 1 &&
                                         opening_hours.periods[0].open.day === 0 &&
-                                        opening_hours.periods[0].open.time === '0000'
+                                        opening_hours.periods[0].open.time === "0000"
                                     ) {
                                         await this.poiOpeningHoursService.create({
                                             piid: myPoiInfo.id,
-                                            open: '0000',
-                                            day: '0'
+                                            open: "0000",
+                                            day: "0"
                                         });
 
                                         console.log(`#${myPoiInfo.id} ${myPoiInfo.name} work full times!`);
@@ -229,8 +231,8 @@ export class PoisResolver {
         return count;
     }
 
-    @Mutation('importPoiType')
-    @Roles('isSuperUser')
+    @Mutation("importPoiType")
+    @Roles("isSuperUser")
     async importPoiType() {
         let count: number = 0;
 
@@ -242,7 +244,7 @@ export class PoisResolver {
                 // // exclude field title
                 if (key >= 1) {
                     const dataSimiliar = row.map((col, index) => (index >= 1 ? col : null));
-                    const typeSimilar = dataSimiliar.filter(obj => obj).join(',');
+                    const typeSimilar = dataSimiliar.filter(obj => obj).join(",");
                     const typeName = row[0];
 
                     try {
@@ -259,13 +261,13 @@ export class PoisResolver {
             })
         );
 
-        console.log('TOTAL POI TYPE IMPORTED: ' + count);
+        console.log("TOTAL POI TYPE IMPORTED: " + count);
 
         return count;
     }
 
-    @Query('testPlace')
-    @Roles('isSuperUser')
+    @Query("testPlace")
+    @Roles("isSuperUser")
     async testPlace(_: any, { name }) {
         let output: any = [];
 
@@ -277,7 +279,7 @@ export class PoisResolver {
         const responseSearch = await googleMapsClient
             .places({
                 query: name,
-                language: 'vi'
+                language: "vi"
             })
             .asPromise();
 
@@ -293,7 +295,7 @@ export class PoisResolver {
                 const responsePlace = await googleMapsClient
                     .place({
                         placeid: place.place_id,
-                        language: 'vi'
+                        language: "vi"
                     })
                     .asPromise();
 
@@ -304,8 +306,8 @@ export class PoisResolver {
         return output;
     }
 
-    @Query('getPoiTypes')
-    @Roles('isSuperUser')
+    @Query("getPoiTypes")
+    @Roles("isSuperUser")
     @UseInterceptors(new PoiTypeTransformInterceptor())
     async getPoiTypes(_: any, { opts }) {
         try {
@@ -324,8 +326,8 @@ export class PoisResolver {
         }
     }
 
-    @Mutation('updatePoiTypeSimilar')
-    @Roles('isSuperUser')
+    @Mutation("updatePoiTypeSimilar")
+    @Roles("isSuperUser")
     @UseInterceptors(new PoiTypeTransformInterceptor())
     async updatePoiTypeSimilar(_: any, { id, input }) {
         try {
@@ -335,8 +337,8 @@ export class PoisResolver {
         }
     }
 
-    @Mutation('removePoiTypeSimilarItem')
-    @Roles('isSuperUser')
+    @Mutation("removePoiTypeSimilarItem")
+    @Roles("isSuperUser")
     @UseInterceptors(new PoiTypeTransformInterceptor())
     async removePoiTypeSimilarItem(_: any, { id, input }) {
         try {
@@ -346,10 +348,10 @@ export class PoisResolver {
         }
     }
 
-    @Query('getPoiInfos')
-    @Roles('isSuperUser')
+    @Query("getPoiInfos")
+    @Roles("isSuperUser")
     @UseInterceptors(new PoiInfoTransformInterceptor())
-    async getPoiInfos(_: any, { opts })     {
+    async getPoiInfos(_: any, { opts }) {
         try {
             const myPoiInfos = await this.poiInfoService.findAll({
                 curPage: opts.curPage,
@@ -366,51 +368,73 @@ export class PoisResolver {
         }
     }
 
+    @Mutation("changePoiType")
+    @Roles("isSuperUser")
+    @UseInterceptors(new PoiInfoTransformInterceptor())
+    async changePoiType(_: any, { id, typeId }) {
+        try {
+            return await this.poiInfoService.changeType(id, typeId);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @Query("searchPoiTypes")
+    @Roles("isSuperUser")
+    @UseInterceptors(new PoiTypeSearchTransformInterceptor())
+    async searchPoiTypes(_: any, { q }) {
+        try {
+            return await this.poiTypeService.search(q);
+        } catch (error) {
+            throw error;
+        }
+    }
+
     ///////////////// FUNCTION //////////////////
 
     private static parseAddr(addressComponent: any) {
         const streetNumber = addressComponent
             .map(item => {
                 if (
-                    typeof item.types[0] !== 'undefined' &&
-                    (item.types[0] === 'street_number' || item.types[0] === 'premise')
+                    typeof item.types[0] !== "undefined" &&
+                    (item.types[0] === "street_number" || item.types[0] === "premise")
                 )
                     return item.long_name;
             })
             .filter(obj => obj)
-            .join('');
+            .join("");
 
         const streetName = addressComponent
             .map(item => {
-                if (typeof item.types[0] !== 'undefined' && item.types[0] === 'route') return item.long_name;
+                if (typeof item.types[0] !== "undefined" && item.types[0] === "route") return item.long_name;
             })
             .filter(obj => obj)
-            .join('');
+            .join("");
 
         const wardName = addressComponent
             .map(item => {
-                if (typeof item.types[0] !== 'undefined' && item.types[0] === 'sublocality_level_1') {
+                if (typeof item.types[0] !== "undefined" && item.types[0] === "sublocality_level_1") {
                     return item.long_name;
                 }
             })
             .filter(obj => obj)
-            .join('');
+            .join("");
 
         const districtName = addressComponent
             .map(item => {
-                if (typeof item.types[0] !== 'undefined' && item.types[0] === 'administrative_area_level_2')
+                if (typeof item.types[0] !== "undefined" && item.types[0] === "administrative_area_level_2")
                     return item.long_name;
             })
             .filter(obj => obj)
-            .join('');
+            .join("");
 
         const cityName = addressComponent
             .map(item => {
-                if (typeof item.types[0] !== 'undefined' && item.types[0] === 'administrative_area_level_1')
+                if (typeof item.types[0] !== "undefined" && item.types[0] === "administrative_area_level_1")
                     return item.long_name;
             })
             .filter(obj => obj)
-            .join('');
+            .join("");
 
         return {
             streetNumber,

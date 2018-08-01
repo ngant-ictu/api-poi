@@ -1,8 +1,8 @@
-import { ValidationError } from 'class-validator';
+import { ValidationError } from "class-validator";
 
 export class ValidateError extends Error {
     constructor(errors: ValidationError[]) {
-        super('');
+        super("");
 
         let msg = {};
 

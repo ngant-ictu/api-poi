@@ -1,11 +1,11 @@
-import { Module, Global } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthService } from './auth.service';
-import { User } from '../../entities/user.entity';
-import { ConfigService } from '../config.service';
-import { config } from '../app.config';
-import { AuthResolver } from './auth.resolver';
-import { TokenService } from './token.service';
+import { Module, Global } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { AuthService } from "./auth.service";
+import { User } from "../../entities/user.entity";
+import { ConfigService } from "../config.service";
+import { config } from "../app.config";
+import { AuthResolver } from "./auth.resolver";
+import { TokenService } from "./token.service";
 
 @Global()
 @Module({

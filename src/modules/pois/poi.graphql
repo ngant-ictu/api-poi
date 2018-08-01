@@ -39,10 +39,12 @@ type Mutation {
   importPoiType: Int!
   updatePoiTypeSimilar(id: Int!, input: JSON!): PoiType!
   removePoiTypeSimilarItem(id: Int!, input: JSON!): PoiType!
+  changePoiType(id: Int!, typeId: Int!): PoiInfo!
 }
 
 type Query {
   testPlace(name: String): JSON!
   getPoiTypes(opts: JSON!): PoiTypes
   getPoiInfos(opts: JSON!): PoiInfos
+  searchPoiTypes(q: String): [PoiType]
 }

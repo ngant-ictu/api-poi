@@ -1,19 +1,19 @@
-import { UseInterceptors, UseGuards, BadRequestException } from '@nestjs/common';
-import { Resolver, Query, Mutation } from '@nestjs/graphql';
-import { AuthGuard } from '../../guards/auth.guard';
-import { Roles } from '../../decorators/roles.decorator';
-import { RegionsService } from './regions.service';
+import { UseInterceptors, UseGuards, BadRequestException } from "@nestjs/common";
+import { Resolver, Query, Mutation } from "@nestjs/graphql";
+import { AuthGuard } from "../../guards/auth.guard";
+import { Roles } from "../../decorators/roles.decorator";
+import { RegionsService } from "./regions.service";
 
-import * as xlsx from 'node-xlsx';
-import { dump } from '../../helpers/dump';
+import * as xlsx from "node-xlsx";
+import { dump } from "../../helpers/dump";
 
-@Resolver('Region')
+@Resolver("Region")
 @UseGuards(AuthGuard)
 export class RegionsResolver {
     constructor(private readonly regionsService: RegionsService) {}
 
-    @Mutation('importRegion')
-    @Roles('administrator')
+    @Mutation("importRegion")
+    @Roles("administrator")
     async importRegion() {
         let count: number = 0;
 
@@ -40,7 +40,7 @@ export class RegionsResolver {
             })
         );
 
-        console.log('TOTAL REGION IMPORTED: ' + count);
+        console.log("TOTAL REGION IMPORTED: " + count);
 
         return {
             count

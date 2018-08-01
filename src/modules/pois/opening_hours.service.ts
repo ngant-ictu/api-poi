@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { PoiOpeningHours } from '../../entities/poi_opening_hours.entity';
+import { Injectable } from "@nestjs/common";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { PoiOpeningHours } from "../../entities/poi_opening_hours.entity";
 
 @Injectable()
 export class PoiOpeningHoursService {
@@ -17,7 +17,7 @@ export class PoiOpeningHoursService {
             close: formData.close
         });
 
-        if (typeof myOpeningHours === 'undefined') {
+        if (typeof myOpeningHours === "undefined") {
             const myOpeningHours = this.openingHoursRepository.create(formData);
 
             return await this.openingHoursRepository.save(myOpeningHours);

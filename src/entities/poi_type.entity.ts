@@ -7,27 +7,27 @@ import {
     BeforeInsert,
     BeforeUpdate,
     BaseEntity
-} from 'typeorm';
-import { IsNotEmpty } from 'class-validator';
-import { IsTypeAlreadyExist } from './validators/poi_type.is-already-exist';
+} from "typeorm";
+import { IsNotEmpty } from "class-validator";
+import { IsTypeAlreadyExist } from "./validators/poi_type.is-already-exist";
 
-@Entity({ name: 'poi_type' })
+@Entity({ name: "poi_type" })
 export class PoiType extends BaseEntity {
-    @PrimaryGeneratedColumn({ name: 'pt_id' })
+    @PrimaryGeneratedColumn({ name: "pt_id" })
     id: number;
 
     @IsNotEmpty()
-    @IsTypeAlreadyExist({ message: 'Type already existed.' })
-    @Column({ name: 'pt_name' })
+    @IsTypeAlreadyExist({ message: "Type already existed." })
+    @Column({ name: "pt_name" })
     name: string;
 
-    @Column({ name: 'pt_similar' })
+    @Column({ name: "pt_similar" })
     similar: string;
 
-    @Column({ name: 'pt_date_created' })
+    @Column({ name: "pt_date_created" })
     dateCreated: number;
 
-    @Column({ name: 'pt_date_modified' })
+    @Column({ name: "pt_date_modified" })
     dateModified: number;
 
     @BeforeInsert()

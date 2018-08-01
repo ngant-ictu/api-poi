@@ -1,5 +1,5 @@
-import { decode, sign, verify } from 'jsonwebtoken';
-import { Injectable } from '@nestjs/common';
+import { decode, sign, verify } from "jsonwebtoken";
+import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class TokenService {
@@ -34,16 +34,6 @@ export class TokenService {
     }
 
     private getSecretKey(data: any) {
-        return (
-            process.env.AUTH_SALT +
-            (data
-                ? '$' +
-                  data.id +
-                  '$' +
-                  data.isStaff +
-                  '$' +
-                  data.isSuperUser
-                : '')
-        );
+        return process.env.AUTH_SALT + (data ? "$" + data.id + "$" + data.isStaff + "$" + data.isSuperUser : "");
     }
 }

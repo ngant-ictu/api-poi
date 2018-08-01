@@ -1,14 +1,14 @@
-import { errorMessagesConfig } from './messages.error';
+import { errorMessagesConfig } from "./messages.error";
 
 export class UserException extends Error {
     public messageCode: string;
     public errorMessage: string;
 
     constructor(messageCode: string) {
-        super('');
+        super("");
 
         const errorMessageConfig = this.getMessageFromMessageCode(messageCode);
-        if (!errorMessageConfig) throw new Error('Unable to find message code error.');
+        if (!errorMessageConfig) throw new Error("Unable to find message code error.");
 
         Error.captureStackTrace(this, this.constructor);
         this.message = errorMessageConfig.errorMessage;
@@ -25,7 +25,7 @@ export class UserException extends Error {
             return false;
         });
 
-        if (!errorMessageConfig) throw new Error('Unable to find the given message code error.');
+        if (!errorMessageConfig) throw new Error("Unable to find the given message code error.");
         return errorMessageConfig;
     }
 }

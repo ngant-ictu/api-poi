@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const _ = require("lodash");
 
 // Find all property values for all children
 export const findAllChildProperties = function(data, container_name, prop_name) {

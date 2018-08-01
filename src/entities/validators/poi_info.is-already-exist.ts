@@ -4,8 +4,8 @@ import {
     ValidatorConstraint,
     ValidatorConstraintInterface,
     ValidationArguments
-} from 'class-validator';
-import { PoiInfo } from '../poi_info.entity';
+} from "class-validator";
+import { PoiInfo } from "../poi_info.entity";
 
 @ValidatorConstraint({ async: true })
 export class IsPoiAlreadyExistConstraint implements ValidatorConstraintInterface {

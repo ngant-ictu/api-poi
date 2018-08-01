@@ -4,13 +4,13 @@ import {
     ValidatorConstraint,
     ValidatorConstraintInterface,
     ValidationArguments
-} from 'class-validator';
-import { User } from '../user.entity';
+} from "class-validator";
+import { User } from "../user.entity";
 
 @ValidatorConstraint({ async: true })
 export class IsUserAlreadyExistConstraint implements ValidatorConstraintInterface {
     validate(email: string, args: ValidationArguments) {
-        console.dir(args)
+        console.dir(args);
         return User.findOne({
             email: email
         }).then(user => {
