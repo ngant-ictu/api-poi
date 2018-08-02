@@ -40,6 +40,7 @@ type Mutation {
   updatePoiTypeSimilar(id: Int!, input: JSON!): PoiType!
   removePoiTypeSimilarItem(id: Int!, input: JSON!): PoiType!
   changePoiType(id: Int!, typeId: Int!): PoiInfo!
+  uploadOctoparse(file: Upload): File!
 }
 
 type Query {

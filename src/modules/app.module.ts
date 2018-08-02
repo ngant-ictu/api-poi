@@ -32,6 +32,8 @@ export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         const schema = this.createSchema();
 
+        consumer.apply(apolloUploadExpress()).forRoutes("/graphql");
+        consumer.apply(LoggerMiddleware).forRoutes("/graphql");
         consumer
             .apply((req, res, next) => {
                 graphqlExpress((req, res) => {
@@ -42,8 +44,6 @@ export class AppModule implements NestModule {
                 })(req, res, next);
             })
             .forRoutes("/graphql");
-        consumer.apply(apolloUploadExpress()).forRoutes("/graphql");
-        consumer.apply(LoggerMiddleware).forRoutes("/graphql");
     }
 
     createSchema() {

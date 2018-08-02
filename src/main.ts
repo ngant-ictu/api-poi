@@ -8,7 +8,7 @@ instance.use(bodyParser.json());
 instance.use(bodyParser.urlencoded({ extended: false }));
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule, { cors: true });
+    const app = await NestFactory.create(AppModule, instance);
 
     app.listen(9000);
 

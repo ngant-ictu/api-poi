@@ -391,6 +391,29 @@ export class PoisResolver {
         }
     }
 
+    @Mutation("uploadOctoparse")
+    @Roles("isSuperUser")
+    async uploadOctoparse(_: any, { file }) {
+        const { stream, filename, mimetype, encoding } = await file;
+        console.dir(filename);
+
+        // const uploadDir = `${process.cwd()}/src/storage`;
+        // const id = shortid.generate();
+        // const path = `${uploadDir}/${id}-${filename}`;
+        // return new Promise((resolve, reject) =>
+        //     stream
+        //         .on("error", error => {
+        //             if (stream.truncated)
+        //                 // Delete the truncated file
+        //                 fs.unlinkSync(path);
+        //             reject(error);
+        //         })
+        //         .pipe(fs.createWriteStream(path))
+        //         .on("error", error => reject(error))
+        //         .on("finish", () => resolve({ id, path }))
+        // );
+    }
+
     ///////////////// FUNCTION //////////////////
 
     private static parseAddr(addressComponent: any) {
