@@ -384,7 +384,8 @@ export class PoisResolver {
     @UseInterceptors(new PoiTypeSearchTransformInterceptor())
     async searchPoiTypes(_: any, { q }) {
         try {
-            return await this.poiTypeService.search(q);
+            const response = await this.poiTypeService.search(q);
+            return response;
         } catch (error) {
             throw error;
         }
