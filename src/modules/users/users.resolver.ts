@@ -13,7 +13,7 @@ import * as fs from "fs";
 import * as mkdirp from "mkdirp";
 
 @Resolver("User")
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 export class UsersResolver {
     constructor(private readonly usersService: UsersService) {}
 
