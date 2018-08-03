@@ -13,7 +13,7 @@ import * as fs from "fs";
 import * as mkdirp from "mkdirp";
 
 @Resolver("User")
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard)
 export class UsersResolver {
     constructor(private readonly usersService: UsersService) {}
 
@@ -83,7 +83,7 @@ export class UsersResolver {
     @Mutation("uploadAvatar")
     async uploadAvatar(_: any, { file }) {
         const { stream, filename, mimetype, encoding } = await file;
-        console.dir(filename)
+        console.dir(file);
         const uploadDir = `${process.cwd()}/src/storage`;
         const id = shortid.generate();
         const path = `${uploadDir}/${id}-${filename}`;

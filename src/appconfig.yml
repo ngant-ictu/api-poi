@@ -1,15 +1,19 @@
 ---
 
 prefix: _olli_poi_
+
 locales:
   en-us
   vi-vn
+
 timezone: Asia/Ho_Chi_Minh
+
 cache:
   lifetime: 86400
-  cacheDir: app/storage/cache/data/
+  cacheDir: src/storage/data/cache
+
 users:
-  directory: app/storage/files/users/
+  directory: src/storage/files/users
   minsize: 100
   maxsize: 10000000
   isoverwrite: false
@@ -20,3 +24,9 @@ users:
     image/jpeg
     image/jpg
     image/png
+
+octoparse:
+  directory: src/storage/files/octoparse
+  minsize: 100
+  maxsize: 10000000
+  isoverwrite: false
