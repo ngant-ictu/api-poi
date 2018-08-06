@@ -5,17 +5,16 @@ import { PoiInfo } from "../../entities/poi_info.entity";
 import { validate } from "class-validator";
 import { ElasticsearchService } from "@nestjs/elasticsearch";
 import { ConfigService } from '../config.service';
-import * as shortid from "shortid";
+import * as slug from "slug";
 import * as fs from "fs";
 import * as mkdirp from "mkdirp";
 import * as xlsx from "node-xlsx";
-import * as slug from "slug";
 import * as GoogleMaps from "@google/maps";
-import { getCurrentDate } from '../../helpers/date';
 import { findAllChildProperties, findItem } from "../../helpers/adj";
 import { dump } from "../../helpers/dump";
 import { RegionsService } from "../regions/regions.service";
 import { PoiOpeningHoursService } from "./opening_hours.service";
+import { PoiTypeService } from "./type.service";
 
 @Injectable()
 export class PoiInfoService {
@@ -24,7 +23,8 @@ export class PoiInfoService {
         private readonly searchService: ElasticsearchService,
         private readonly configService: ConfigService,
         private readonly regionsService: RegionsService,
-        private readonly poiOpeningHoursService: PoiOpeningHoursService
+        private readonly poiOpeningHoursService: PoiOpeningHoursService,
+        private readonly typeService: PoiTypeService
     ) {}
 
     async findAll(options: { curPage: number; perPage: number; q?: string; group?: number; sort?: string }) {
@@ -119,68 +119,73 @@ export class PoiInfoService {
 
     async import(file: any) {
         try {
+            console.log('Uploading...');
             const { stream, filename, mimetype, encoding } = await file;
             const octoparseDir = this.configService.get("octoparse").directory;
             const uploadDir = `${process.cwd()}/${octoparseDir}`;
             await mkdirp(uploadDir);
             const filePath = `${uploadDir}/${filename}`;
 
-            if (fs.existsSync(filePath)) return;
+            if (fs.existsSync(filePath)) {
+                console.log('File already existed.')
+                return;
+            }
 
-            return new Promise((resolve, reject) =>
-                stream
-                    .on("error", error => {
-                        if (stream.truncated)
-                            // Delete the truncated file
-                            fs.unlinkSync(filePath);
-                        reject(error);
-                    })
-                    .pipe(fs.createWriteStream(filePath))
-                    .on("error", error => reject(error))
-                    .on("finish", async () => {
-                        let count: number = 0;
-                        const googleMapsClient = GoogleMaps.createClient({
-                            key: process.env.GOOGLE_API_KEY,
-                            Promise: Promise
-                        });
+            await stream
+                .pipe(fs.createWriteStream(filePath))
+                .on('finish', async () => {
+                    let count = 0;
+                    console.log("Upload completed.");
+                    const googleMapsClient = await GoogleMaps.createClient({
+                        key: process.env.GOOGLE_API_KEY,
+                        Promise: Promise
+                    });
 
-                        // Parse a file
-                        const workSheetsFromFile = await xlsx.parse(filePath);
-                        const data = workSheetsFromFile[0].data;
-                        // get all district and city to except in regex ward list
-                        const myRegions = await this.regionsService.findAll({
-                            where: {
-                                parent: 0
-                            },
-                            relations: ["children"],
-                            cache: true
-                        });
+                    // Parse a file
+                    console.log('Parsing file...');
+                    const workSheetsFromFile = await xlsx.parse(filePath);
+                    const data = workSheetsFromFile[0].data;
+                    console.log("Parse completed.");
 
-                        let districtAndCityExclude = [];
-                        const cityList = myRegions.map(r => r.id);
-                        cityList.map(cityId => {
-                            const root = findItem(myRegions, "id", cityId);
-                            let kids = findAllChildProperties(root.children, "children", "name");
-                            districtAndCityExclude = districtAndCityExclude.concat(kids);
-                        });
+                    // get all district and city to except in regex ward list
+                    const myRegions = await this.regionsService.findAll({
+                        where: {
+                            parent: 0
+                        },
+                        relations: ["children"],
+                        cache: true
+                    });
 
-                        districtAndCityExclude = districtAndCityExclude.concat(myRegions.map(r => r.name));
+                    let districtAndCityExclude = [];
+                    const cityList = myRegions.map(r => r.id);
+                    cityList.map(cityId => {
+                        const root = findItem(myRegions, "id", cityId);
+                        let kids = findAllChildProperties(root.children, "children", "name");
+                        districtAndCityExclude = districtAndCityExclude.concat(kids);
+                    });
 
-                        data.map(async (item, key) => {
-                            // Exclude title field
-                            if (key >= 1) {
-                                if (item[0].length > 0) {
-                                    let responseSearch: any = null;
+                    districtAndCityExclude = districtAndCityExclude.concat(myRegions.map(r => r.name));
 
-                                    // request gg places API to get place_id using in gg place detail API
-                                    responseSearch = await googleMapsClient
-                                        .places({ query: item[0], language: "vi" })
-                                        .asPromise();
+                    console.log('Begin importing...');
 
-                                    let international_phone_number = "";
+                    data.map(async (item, key) => {
+                        count ++;
 
-                                    // May be gg place return more than 1 record
-                                    const place = responseSearch.json.results[0];
+                        // Exclude title field
+                        if (key >= 1) {
+                            if (item[0].length > 0) {
+                                let responseSearch: any = null;
+                                // request gg places API to get place_id using in gg place detail API
+                                responseSearch = await googleMapsClient
+                                    .places({ query: item[0], language: "vi" })
+                                    .asPromise();
+
+                                let international_phone_number = "";
+
+                                // May be gg place return more than 1 record / get 1 first
+                                const place = responseSearch.json.results[0];
+
+                                if (typeof place !== 'undefined') {
                                     // Get info of 1 place
                                     const responsePlace = await googleMapsClient
                                         .place({ placeid: place.place_id, language: "vi" })
@@ -207,6 +212,11 @@ export class PoiInfoService {
                                     } = responsePlace.json.result;
 
                                     // select type in db
+                                    let type: number = 0;
+                                    const myType = await this.typeService.findOneBySimilar(item[1]);
+                                    if (myType) {
+                                        type = myType.id;
+                                    }
 
                                     // reject if not in Vietnam +84
                                     if (
@@ -231,6 +241,7 @@ export class PoiInfoService {
 
                                         // dump(parsedAddr)
                                         let poiDataToWrite = {
+                                            type: type,
                                             name: name, // entity: item[1],
                                             slug: slug(name, {
                                                 lower: true
@@ -284,8 +295,6 @@ export class PoiInfoService {
                                         try {
                                             const myPoiInfo = await this.create(poiDataToWrite);
 
-                                            count++;
-
                                             // get opening hours
                                             if (typeof opening_hours !== "undefined") {
                                                 if (
@@ -324,9 +333,14 @@ export class PoiInfoService {
                                     }
                                 }
                             }
-                        });
+                        }
                     })
-            );
+
+
+                    console.log('TOTAL: ' + count);
+                })
+
+            return 1;
         } catch (error) {
             throw error;
         }

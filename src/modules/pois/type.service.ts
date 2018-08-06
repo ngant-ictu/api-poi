@@ -101,14 +101,18 @@ export class PoiTypeService {
     }
 
     async create(formData: any) {
-        const myType = this.typeRepository.create(formData);
+        try {
+            const myType = this.typeRepository.create(formData);
 
-        const errors = await validate(myType, {
-            validationError: { target: false }
-        });
+            const errors = await validate(myType, {
+                validationError: { target: false }
+            });
 
-        if (errors.length === 0) {
-            return await this.typeRepository.save(myType);
+            if (errors.length === 0) {
+                return await this.typeRepository.save(myType);
+            }
+        } catch (error) {
+            throw error;
         }
     }
 
@@ -121,6 +125,16 @@ export class PoiTypeService {
             return await this.searchService.search({ index: "poi_type", body: queryBuilder.build() });
         } catch (error) {
             console.trace(error.message);
+        }
+    }
+
+    async findOneBySimilar(name: string) {
+        try {
+            let qb = this.typeRepository.createQueryBuilder("poitype");
+            qb.where('FIND_IN_SET("' + name + '", poitype.similar)');
+            return await qb.getOne();
+        } catch (error) {
+            throw error;
         }
     }
 }

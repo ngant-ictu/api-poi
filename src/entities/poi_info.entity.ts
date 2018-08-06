@@ -10,7 +10,7 @@ import {
     BaseEntity
 } from "typeorm";
 import { IsNotEmpty } from "class-validator";
-// import { IsPoiAlreadyExist } from './validators/poi_info.is-already-exist';
+import { IsPoiAlreadyExist } from './validators/poi_info.is-already-exist';
 import { PoiOpeningHours } from "./poi_opening_hours.entity";
 import { Region } from "./region.entity";
 import { PoiType } from "./poi_type.entity";
@@ -77,7 +77,7 @@ export class PoiInfo extends BaseEntity {
     public status: number;
 
     @IsNotEmpty()
-    // @IsPoiAlreadyExist({ message: 'Poi already existed.' })
+    @IsPoiAlreadyExist({ message: 'Poi already existed.' })
     @Column({ name: "pi_slug" })
     public slug: string;
 
