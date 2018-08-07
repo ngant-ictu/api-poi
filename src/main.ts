@@ -12,7 +12,7 @@ instance.use(bodyParser.urlencoded({ extended: false }));
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, instance);
 
-    app.listen(9000);
+    app.listen(9000, '0.0.0.0');
 
     console.log("Application is listening on port 9000");
 }
