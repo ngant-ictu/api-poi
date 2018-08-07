@@ -33,14 +33,14 @@ export class PoisResolver {
             data.map(async (row, key) => {
                 // // exclude field title
                 if (key >= 1) {
-                    const dataSimiliar = row.map((col, index) => (index >= 1 ? col : null));
-                    const typeSimilar = dataSimiliar.filter(obj => obj).join(",");
+                    const dataSimilar = row.map((col, index) => (index >= 1 ? col : null));
+                    const typeSimilar = dataSimilar.filter(obj => obj).join(",");
                     const typeName = row[0];
 
                     try {
                         await this.poiTypeService.create({
                             name: typeName,
-                            similiar: typeSimilar
+                            similar: typeSimilar
                         });
                     } catch (err) {
                         throw new BadRequestException(err);

@@ -85,6 +85,6 @@
 
 - remove bcryptjs, node-python-hashser package
 
-# Pm2
+# Pm2 (Fork mode)
 
-- pm2 start npm -- start
+- pm2 start --name api npm -- start
