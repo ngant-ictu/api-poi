@@ -12,3 +12,4 @@ node_modules/*
 ehthumbs.db
 Thumbs.db
 src/storage/files/*
+.prod.env
