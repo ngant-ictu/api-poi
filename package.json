@@ -42,7 +42,6 @@
     "prettyjson": "^1.2.1",
     "raven": "^2.6.3",
     "redis": "2.8.0",
-    "ref-napi": "^1.4.0",
     "reflect-metadata": "0.1.12",
     "rxjs": "6.2.1",
     "rxjs-compat": "6.2.1",
