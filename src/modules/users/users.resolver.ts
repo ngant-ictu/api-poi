@@ -13,13 +13,12 @@ import * as fs from "fs";
 import * as mkdirp from "mkdirp";
 
 @Resolver("User")
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 export class UsersResolver {
     constructor(private readonly usersService: UsersService) {}
 
     @Query("getUsers")
     @Roles("isSuperUser")
-    // @UseInterceptors(RavenInterceptor())
     @UseInterceptors(new UserTransformInterceptor())
     async getUsers(_: any, { opts }) {
         try {
@@ -52,6 +51,7 @@ export class UsersResolver {
 
     @Mutation("createUser")
     @Roles("isSuperUser")
+    @UseInterceptors(RavenInterceptor())
     async createUser(_: any, { input }) {
         try {
             return await this.usersService.create(input);

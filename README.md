@@ -87,4 +87,4 @@
 
 # Pm2
 
-- pm2 start -i max npm -- start
+- pm2 start npm -- start
