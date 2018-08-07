@@ -83,4 +83,8 @@
 
 # Fix node-gyp install fail centos 6
 
-- remove bcryptjs package
+- remove bcryptjs, node-python-hashser package
+
+# Pm2
+
+- pm2 start -i max npm -- start

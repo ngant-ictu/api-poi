@@ -4,7 +4,7 @@
   "description": "OLLI POI Api",
   "scripts": {
     "dev": "NODE_ENV=dev ts-node-dev --fast --respawn --no-deps src/main.ts --project src/tsconfig.json",
-    "start": "NODE_ENV=prod ts-node --fast src/main.ts --project src/tsconfig.json"
+    "start": "NODE_ENV=prod ts-node src/main.ts --env=NODE_ENV --project src/tsconfig.json"
   },
   "author": "Duy <duy@olli-ai.com>",
   "license": "MIT",
@@ -54,19 +54,19 @@
     "typescript": "2.9.2"
   },
   "devDependencies": {
+    "@types/convict": "^4.2.0",
+    "@types/dotenv": "^4.0.3",
     "@types/express": "4.16.0",
     "@types/graphql": "0.13.1",
     "@types/gulp": "4.0.5",
+    "@types/js-yaml": "^3.11.2",
+    "@types/jsonwebtoken": "^7.2.7",
     "@types/lodash": "4.14.109",
     "@types/node": "10.3.3",
+    "@types/raven": "^2.5.1",
     "@types/rimraf": "2.0.2",
     "@types/webpack": "4.4.0",
     "@types/webpack-env": "1.13.6",
-    "@types/convict": "^4.2.0",
-    "@types/dotenv": "^4.0.3",
-    "@types/js-yaml": "^3.11.2",
-    "@types/jsonwebtoken": "^7.2.7",
-    "@types/raven": "^2.5.1",
     "ts-node-dev": "1.0.0-pre.26",
     "tslint": "^5.7.0",
     "tslint-config-standard": "^6.0.1"
