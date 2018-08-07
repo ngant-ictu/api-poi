@@ -2,7 +2,6 @@ import { Injectable, BadRequestException } from "@nestjs/common";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../../entities/user.entity";
-import { plainToClass } from "class-transformer";
 import { UserException } from "../../filters/error/user-exception.error";
 
 @Injectable()

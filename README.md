@@ -80,3 +80,7 @@
 # Format ts file using prettier config
 
 - prettier --config ./.prettierrc --write "src/**/*.ts"
+
+# Fix node-gyp install fail centos 6
+
+- remove bcryptjs package

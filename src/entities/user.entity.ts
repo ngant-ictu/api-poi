@@ -10,8 +10,8 @@ import {
 } from "typeorm";
 import { IsNotEmpty, IsEmail, IsIn, validate } from "class-validator";
 import { IsUserAlreadyExist } from "./validators/user.is-already-exist";
-import * as hashers from "node-django-hashers";
 import { ValidateError } from "../filters/error/validate-exception.error";
+import { hashPassword } from '../helpers/hasher';
 
 @Entity({ name: "user" })
 export class User extends BaseEntity {
@@ -59,10 +59,7 @@ export class User extends BaseEntity {
     @BeforeInsert()
     private async doBeforeInsertion() {
         this.dateCreated = Math.floor(Date.now() / 1000);
-
-        const h = new hashers.PBKDF2PasswordHasher();
-        const hash = await h.encode(this.password, h.salt());
-        this.password = hash;
+        this.password = hashPassword(this.password);
 
         const errors = await validate(this, {
             validationError: { target: false }
@@ -86,8 +83,8 @@ export class User extends BaseEntity {
     }
 
     public async comparePassword(password: string) {
-        const h = new hashers.PBKDF2PasswordHasher();
-        return await h.verify(password, this.password);
+        const h = hashPassword(password);
+        return (this.password === h) ? true : false;
     }
 
     public getStatusName() {
