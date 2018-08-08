@@ -131,7 +131,19 @@ export class PoiTypeService {
     async findOneBySimilar(name: string) {
         try {
             let qb = this.typeRepository.createQueryBuilder("poitype");
-            qb.where('FIND_IN_SET("' + name + '", poitype.similar)');
+                qb.where('FIND_IN_SET("' + name + '", poitype.similar)');
+
+            return await qb.getOne();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async findOneByGgSimilar(name: string) {
+        try {
+            let qb = this.typeRepository.createQueryBuilder("poitype");
+                qb.where('FIND_IN_SET("' + name + '", poitype.ggSimilar)');
+
             return await qb.getOne();
         } catch (error) {
             throw error;

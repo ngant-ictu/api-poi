@@ -24,6 +24,9 @@ export class PoiType extends BaseEntity {
     @Column({ name: "pt_similar" })
     similar: string;
 
+    @Column({ name: "pt_gg_similar" })
+    ggSimilar: string;
+
     @Column({ name: "pt_date_created" })
     dateCreated: number;
 

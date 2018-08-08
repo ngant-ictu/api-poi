@@ -14,7 +14,7 @@ import * as xlsx from "node-xlsx";
 import * as GoogleMaps from "@google/maps";
 
 @Resolver("Poi")
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard)
 export class PoisResolver {
     constructor(
         private readonly poiInfoService: PoiInfoService,
@@ -22,7 +22,7 @@ export class PoisResolver {
     ) {}
 
     @Mutation("importPoiType")
-    @Roles("isSuperUser")
+    // @Roles("isSuperUser")
     async importPoiType() {
         let count: number = 0;
 
@@ -33,14 +33,19 @@ export class PoisResolver {
             data.map(async (row, key) => {
                 // // exclude field title
                 if (key >= 1) {
-                    const dataSimilar = row.map((col, index) => (index >= 1 ? col : null));
-                    const typeSimilar = dataSimilar.filter(obj => obj).join(",");
                     const typeName = row[0];
+
+                    const olliSimilar = row.map((col, index) => (index == 1 ? col : null));
+                    const typeOlliSimilar = olliSimilar.filter(obj => obj).join(",");
+
+                    const ggSimilar = row.map((col, index) => (index == 2 ? col : null));
+                    const typeGgSimilar = ggSimilar.filter(obj => obj).join(",");
 
                     try {
                         await this.poiTypeService.create({
                             name: typeName,
-                            similar: typeSimilar
+                            similar: typeOlliSimilar,
+                            ggSimilar: typeGgSimilar
                         });
                     } catch (err) {
                         throw new BadRequestException(err);

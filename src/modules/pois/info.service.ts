@@ -211,9 +211,9 @@ export class PoiInfoService {
                                         types
                                     } = responsePlace.json.result;
 
-                                    // select type in db
+                                    // select GG type in db
                                     let type: number = 0;
-                                    const myType = await this.typeService.findOneBySimilar(item[1]);
+                                    const myType = await this.typeService.findOneByGgSimilar(item[1]);
                                     if (myType) {
                                         type = myType.id;
                                     }
