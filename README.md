@@ -88,3 +88,8 @@
 # Pm2 (Fork mode)
 
 - pm2 start --name api npm -- start
+
+# Elasticsearch dead lock subsys
+
+- rm -rf /var/lock/subsys/elasticsearch
+- Stop -> Remove Subsys -> Start
