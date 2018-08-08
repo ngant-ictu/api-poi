@@ -117,9 +117,32 @@ export class PoiInfoService {
         }
     }
 
+    async changeStatus(id: number, status: number) {
+        try {
+            let myPoiInfo = await this.infoRepository.findOneOrFail(id);
+            myPoiInfo.status = status;
+
+            await this.infoRepository.save(myPoiInfo);
+            return await this.infoRepository.findOneOrFail({
+                where: { id: id },
+                join: {
+                    alias: "poiinfo",
+                    leftJoinAndSelect: {
+                        region1: "poiinfo.ward",
+                        region2: "poiinfo.district",
+                        region3: "poiinfo.city",
+                        poitype: "poiinfo.type"
+                    }
+                }
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async import(file: any) {
         try {
-            console.log('Uploading...');
+            console.log("Uploading...");
             const { stream, filename } = await file;
             const octoparseDir = this.configService.get("octoparse").directory;
             const uploadDir = `${process.cwd()}/${octoparseDir}`;
@@ -127,217 +150,209 @@ export class PoiInfoService {
             const filePath = `${uploadDir}/${filename}`;
 
             if (fs.existsSync(filePath)) {
-                console.log('File already existed.')
+                console.log("File already existed.");
                 return;
             }
 
             await new Promise(resolve => {
-                stream
-                    .pipe(fs.createWriteStream(filePath))
-                    .on('finish', async () => {
-                        let count = 0;
-                        console.log("Upload completed.");
-                        const googleMapsClient = await GoogleMaps.createClient({
-                            key: process.env.GOOGLE_API_KEY,
-                            Promise: Promise
-                        });
+                stream.pipe(fs.createWriteStream(filePath)).on("finish", async () => {
+                    let count = 0;
+                    console.log("Upload completed.");
+                    const googleMapsClient = await GoogleMaps.createClient({
+                        key: process.env.GOOGLE_API_KEY,
+                        Promise: Promise
+                    });
 
-                        // Parse a file
-                        console.log('Parsing file...');
-                        const workSheetsFromFile = await xlsx.parse(filePath);
-                        const data = workSheetsFromFile[0].data;
-                        console.log("Parse completed.");
+                    // Parse a file
+                    console.log("Parsing file...");
+                    const workSheetsFromFile = await xlsx.parse(filePath);
+                    const data = workSheetsFromFile[0].data;
+                    console.log("Parse completed.");
 
-                        // get all district and city to except in regex ward list
-                        const myRegions = await this.regionsService.findAll({
-                            where: {
-                                parent: 0
-                            },
-                            relations: ["children"],
-                            cache: true
-                        });
+                    // get all district and city to except in regex ward list
+                    const myRegions = await this.regionsService.findAll({
+                        where: {
+                            parent: 0
+                        },
+                        relations: ["children"],
+                        cache: true
+                    });
 
-                        let districtAndCityExclude = [];
-                        const cityList = myRegions.map(r => r.id);
-                        cityList.map(cityId => {
-                            const root = findItem(myRegions, "id", cityId);
-                            let kids = findAllChildProperties(root.children, "children", "name");
-                            districtAndCityExclude = districtAndCityExclude.concat(kids);
-                        });
+                    let districtAndCityExclude = [];
+                    const cityList = myRegions.map(r => r.id);
+                    cityList.map(cityId => {
+                        const root = findItem(myRegions, "id", cityId);
+                        let kids = findAllChildProperties(root.children, "children", "name");
+                        districtAndCityExclude = districtAndCityExclude.concat(kids);
+                    });
 
-                        districtAndCityExclude = districtAndCityExclude.concat(myRegions.map(r => r.name));
+                    districtAndCityExclude = districtAndCityExclude.concat(myRegions.map(r => r.name));
 
-                        console.log('Begin importing...');
+                    console.log("Begin importing...");
 
-                        data.map(async (item, key) => {
-                            count++;
+                    data.map(async (item, key) => {
+                        count++;
 
-                            // Exclude title field
-                            if (key >= 1) {
-                                if (item[0].length > 0) {
-                                    let responseSearch: any = null;
-                                    // request gg places API to get place_id using in gg place detail API
-                                    responseSearch = await googleMapsClient
-                                        .places({ query: item[0], language: "vi" })
+                        // Exclude title field
+                        if (key >= 1) {
+                            if (item[0].length > 0) {
+                                let responseSearch: any = null;
+                                // request gg places API to get place_id using in gg place detail API
+                                responseSearch = await googleMapsClient
+                                    .places({ query: item[0], language: "vi" })
+                                    .asPromise();
+
+                                let international_phone_number = "";
+
+                                // May be gg place return more than 1 record / get 1 first
+                                const place = responseSearch.json.results[0];
+
+                                if (typeof place !== "undefined") {
+                                    // Get info of 1 place
+                                    const responsePlace = await googleMapsClient
+                                        .place({ placeid: place.place_id, language: "vi" })
                                         .asPromise();
 
-                                    let international_phone_number = "";
+                                    if (typeof responsePlace.json.result.international_phone_number !== "undefined") {
+                                        international_phone_number =
+                                            responsePlace.json.result.international_phone_number;
+                                    }
 
-                                    // May be gg place return more than 1 record / get 1 first
-                                    const place = responseSearch.json.results[0];
+                                    const {
+                                        name,
+                                        address_components,
+                                        formatted_address,
+                                        geometry,
+                                        opening_hours,
+                                        place_id,
+                                        rating,
+                                        url,
+                                        website,
+                                        types
+                                    } = responsePlace.json.result;
 
-                                    if (typeof place !== 'undefined') {
-                                        // Get info of 1 place
-                                        const responsePlace = await googleMapsClient
-                                            .place({ placeid: place.place_id, language: "vi" })
-                                            .asPromise();
+                                    // select GG type in db
+                                    let type: number = 0;
+                                    const myType = await this.typeService.findOneByGgSimilar(item[1]);
+                                    if (myType) {
+                                        type = myType.id;
+                                    }
 
-                                        if (
-                                            typeof responsePlace.json.result.international_phone_number !== "undefined"
-                                        ) {
-                                            international_phone_number =
-                                                responsePlace.json.result.international_phone_number;
-                                        }
+                                    // reject if not in Vietnam +84
+                                    if (
+                                        international_phone_number.match(/\+84\s?\d+/g) !== null ||
+                                        international_phone_number === ""
+                                    ) {
+                                        let parsedAddr = await this._parseAddr(address_components);
+                                        // console.log(formatted_address);
 
-                                        const {
-                                            name,
-                                            address_components,
-                                            formatted_address,
-                                            geometry,
-                                            opening_hours,
-                                            place_id,
-                                            rating,
-                                            url,
-                                            website,
-                                            types
-                                        } = responsePlace.json.result;
-
-                                        // select GG type in db
-                                        let type: number = 0;
-                                        const myType = await this.typeService.findOneByGgSimilar(item[1]);
-                                        if (myType) {
-                                            type = myType.id;
-                                        }
-
-                                        // reject if not in Vietnam +84
-                                        if (
-                                            international_phone_number.match(/\+84\s?\d+/g) !== null ||
-                                            international_phone_number === ""
-                                        ) {
-                                            let parsedAddr = await this._parseAddr(address_components);
-                                            // console.log(formatted_address);
-
-                                            // find ward if not in gg data
-                                            if (parsedAddr.wardName === "") {
-                                                const wardRe = new RegExp(
-                                                    "(?:Phường|Xã)s?((?!" + districtAndCityExclude.join("|") + ").)+,",
-                                                    "g"
-                                                ); // Need get end commas to parse with address not match
-                                                const wardMatches = formatted_address.match(wardRe);
-                                                if (wardMatches !== null) {
-                                                    const matchesArr = wardMatches[0].split(",");
-                                                    parsedAddr.wardName = matchesArr[0];
-                                                }
+                                        // find ward if not in gg data
+                                        if (parsedAddr.wardName === "") {
+                                            const wardRe = new RegExp(
+                                                "(?:Phường|Xã)s?((?!" + districtAndCityExclude.join("|") + ").)+,",
+                                                "g"
+                                            ); // Need get end commas to parse with address not match
+                                            const wardMatches = formatted_address.match(wardRe);
+                                            if (wardMatches !== null) {
+                                                const matchesArr = wardMatches[0].split(",");
+                                                parsedAddr.wardName = matchesArr[0];
                                             }
+                                        }
 
-                                            // dump(parsedAddr)
-                                            let poiDataToWrite = {
-                                                type: type,
-                                                name: name, // entity: item[1],
-                                                slug: slug(name, {
-                                                    lower: true
-                                                }),
-                                                number: parsedAddr.streetNumber,
-                                                street: parsedAddr.streetName,
-                                                lat: geometry.location.lat,
-                                                lng: geometry.location.lng,
-                                                rating: rating,
-                                                phoneNumber: international_phone_number,
-                                                website: website,
-                                                ggPlaceId: place_id,
-                                                ggFullAddress: formatted_address
-                                            };
+                                        // dump(parsedAddr)
+                                        let poiDataToWrite = {
+                                            type: type,
+                                            name: name, // entity: item[1],
+                                            slug: slug(name, {
+                                                lower: true
+                                            }),
+                                            number: parsedAddr.streetNumber,
+                                            street: parsedAddr.streetName,
+                                            lat: geometry.location.lat,
+                                            lng: geometry.location.lng,
+                                            rating: rating,
+                                            phoneNumber: international_phone_number,
+                                            website: website,
+                                            ggPlaceId: place_id,
+                                            ggFullAddress: formatted_address
+                                        };
 
-                                            // get district & ward follow by district
-                                            const myDistrict = await this.regionsService.findDistrictByName(
-                                                parsedAddr.districtName
+                                        // get district & ward follow by district
+                                        const myDistrict = await this.regionsService.findDistrictByName(
+                                            parsedAddr.districtName
+                                        );
+                                        if (typeof myDistrict !== "undefined") {
+                                            poiDataToWrite["district"] = myDistrict.id;
+
+                                            const myWard = await this.regionsService.findWardByName(
+                                                parsedAddr.wardName,
+                                                myDistrict.id
                                             );
+                                            if (typeof myWard !== "undefined") {
+                                                poiDataToWrite["ward"] = myWard.id;
+                                            }
+                                        }
+
+                                        // get city
+                                        const myCity = await this.regionsService.findCityByName(parsedAddr.cityName);
+                                        if (typeof myCity !== "undefined") {
+                                            poiDataToWrite["city"] = myCity.id;
+                                        } else {
+                                            // get city from parent id of district
                                             if (typeof myDistrict !== "undefined") {
-                                                poiDataToWrite["district"] = myDistrict.id;
-
-                                                const myWard = await this.regionsService.findWardByName(
-                                                    parsedAddr.wardName,
-                                                    myDistrict.id
-                                                );
-                                                if (typeof myWard !== "undefined") {
-                                                    poiDataToWrite["ward"] = myWard.id;
-                                                }
+                                                poiDataToWrite["city"] = myDistrict.parent;
                                             }
+                                        }
 
-                                            // get city
-                                            const myCity = await this.regionsService.findCityByName(
-                                                parsedAddr.cityName
-                                            );
-                                            if (typeof myCity !== "undefined") {
-                                                poiDataToWrite["city"] = myCity.id;
-                                            } else {
-                                                // get city from parent id of district
-                                                if (typeof myDistrict !== "undefined") {
-                                                    poiDataToWrite["city"] = myDistrict.parent;
-                                                }
-                                            }
+                                        // get google map id https://maps.google.com/?cid=<ggMapId>
+                                        const ggMapMatches = url.match(/cid=(\d+)/i);
+                                        if (ggMapMatches !== null) {
+                                            poiDataToWrite["ggMapId"] = ggMapMatches[1];
+                                        }
 
-                                            // get google map id https://maps.google.com/?cid=<ggMapId>
-                                            const ggMapMatches = url.match(/cid=(\d+)/i);
-                                            if (ggMapMatches !== null) {
-                                                poiDataToWrite["ggMapId"] = ggMapMatches[1];
-                                            }
+                                        try {
+                                            const myPoiInfo = await this.create(poiDataToWrite);
 
-                                            try {
-                                                const myPoiInfo = await this.create(poiDataToWrite);
+                                            // get opening hours
+                                            if (typeof opening_hours !== "undefined") {
+                                                if (
+                                                    opening_hours.periods.length === 1 &&
+                                                    opening_hours.periods[0].open.day === 0 &&
+                                                    opening_hours.periods[0].open.time === "0000"
+                                                ) {
+                                                    await this.poiOpeningHoursService.create({
+                                                        piid: myPoiInfo.id,
+                                                        open: "0000",
+                                                        day: "0"
+                                                    });
 
-                                                // get opening hours
-                                                if (typeof opening_hours !== "undefined") {
-                                                    if (
-                                                        opening_hours.periods.length === 1 &&
-                                                        opening_hours.periods[0].open.day === 0 &&
-                                                        opening_hours.periods[0].open.time === "0000"
-                                                    ) {
+                                                    console.log(`#${myPoiInfo.id} ${myPoiInfo.name} work full times!`);
+                                                } else {
+                                                    opening_hours.periods.map(async hour => {
                                                         await this.poiOpeningHoursService.create({
                                                             piid: myPoiInfo.id,
-                                                            open: "0000",
-                                                            day: "0"
+                                                            open: hour.open.time,
+                                                            close: hour.close.time,
+                                                            day: hour.close.day
                                                         });
-
-                                                        console.log(
-                                                            `#${myPoiInfo.id} ${myPoiInfo.name} work full times!`
-                                                        );
-                                                    } else {
-                                                        opening_hours.periods.map(async hour => {
-                                                            await this.poiOpeningHoursService.create({
-                                                                piid: myPoiInfo.id,
-                                                                open: hour.open.time,
-                                                                close: hour.close.time,
-                                                                day: hour.close.day
-                                                            });
-                                                        });
-                                                    }
-                                                } else {
-                                                    console.log(`---   Place: "${item[0]}" has no work times!   ---`);
+                                                    });
                                                 }
-                                            } catch (err) {
-                                                console.log(`###   Place can not created: "${item[0]}"  ###`);
-                                                throw err;
+                                            } else {
+                                                console.log(`---   Place: "${item[0]}" has no work times!   ---`);
                                             }
-                                        } else {
-                                            console.log(`XXX   Place not in Vietnam: "${item[0]}"  XXX`);
+                                        } catch (err) {
+                                            console.log(`###   Place can not created: "${item[0]}"  ###`);
+                                            throw err;
                                         }
+                                    } else {
+                                        console.log(`XXX   Place not in Vietnam: "${item[0]}"  XXX`);
                                     }
                                 }
                             }
-                        })
-                        console.log('TOTAL: ' + count);
-                    })
+                        }
+                    });
+                    console.log("TOTAL: " + count);
+                });
             });
 
             return 1;

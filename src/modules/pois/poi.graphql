@@ -21,6 +21,7 @@ type PoiInfo {
   phoneNumber: String
   rating: Float
   ggFullAddress: String
+  status: Int!
   dateCreated: JSON
 }
 
@@ -48,5 +49,6 @@ type Mutation {
   removePoiTypeSimilarItem(id: Int!, input: JSON!): PoiType!
   changePoiType(id: Int!, typeId: Int!): PoiInfo!
   uploadOctoparse(file: Upload): Int
+  changeStatus(id: Int!, status: Int!): PoiInfo!
 }
 

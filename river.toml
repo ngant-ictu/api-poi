@@ -72,3 +72,4 @@ index = "poi_type"
 type = "pt"
   [rule.field]
   pt_similar = ",list"
+  pt_gg_similar = ",list"

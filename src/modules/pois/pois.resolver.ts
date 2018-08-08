@@ -16,10 +16,7 @@ import * as GoogleMaps from "@google/maps";
 @Resolver("Poi")
 @UseGuards(AuthGuard)
 export class PoisResolver {
-    constructor(
-        private readonly poiInfoService: PoiInfoService,
-        private readonly poiTypeService: PoiTypeService
-    ) {}
+    constructor(private readonly poiInfoService: PoiInfoService, private readonly poiTypeService: PoiTypeService) {}
 
     @Mutation("importPoiType")
     @Roles("isSuperUser")
@@ -191,6 +188,17 @@ export class PoisResolver {
     async uploadOctoparse(_: any, { file }) {
         try {
             return await this.poiInfoService.import(file);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @Mutation("changeStatus")
+    @Roles("isSuperUser")
+    @UseInterceptors(new PoiInfoTransformInterceptor())
+    async changeStatus(_: any, { id, status }) {
+        try {
+            return await this.poiInfoService.changeStatus(id, status);
         } catch (error) {
             throw error;
         }
