@@ -120,10 +120,10 @@ export class PoiInfoService {
     async import(file: any) {
         try {
             console.log('Uploading...');
-            const { stream, filename, mimetype, encoding } = await file;
+            const { stream, filename } = await file;
             const octoparseDir = this.configService.get("octoparse").directory;
             const uploadDir = `${process.cwd()}/${octoparseDir}`;
-            await mkdirp(uploadDir);
+            mkdirp(uploadDir);
             const filePath = `${uploadDir}/${filename}`;
 
             if (fs.existsSync(filePath)) {
@@ -131,7 +131,7 @@ export class PoiInfoService {
                 return;
             }
 
-            await stream
+            stream
                 .pipe(fs.createWriteStream(filePath))
                 .on('finish', async () => {
                     let count = 0;
