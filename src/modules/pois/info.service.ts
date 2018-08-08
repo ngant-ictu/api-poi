@@ -274,7 +274,8 @@ export class PoiInfoService {
                                             phoneNumber: international_phone_number,
                                             website: website,
                                             ggPlaceId: place_id,
-                                            ggFullAddress: formatted_address
+                                            ggFullAddress: formatted_address,
+                                            status: 3
                                         };
 
                                         // get district & ward follow by district
