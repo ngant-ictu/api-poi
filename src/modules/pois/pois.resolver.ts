@@ -14,7 +14,7 @@ import * as xlsx from "node-xlsx";
 import * as GoogleMaps from "@google/maps";
 
 @Resolver("Poi")
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 export class PoisResolver {
     constructor(
         private readonly poiInfoService: PoiInfoService,
@@ -22,7 +22,7 @@ export class PoisResolver {
     ) {}
 
     @Mutation("importPoiType")
-    // @Roles("isSuperUser")
+    @Roles("isSuperUser")
     async importPoiType() {
         let count: number = 0;
 
