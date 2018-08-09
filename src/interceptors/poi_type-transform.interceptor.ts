@@ -28,6 +28,10 @@ export class PoiTypeTransformInterceptor<T> implements NestInterceptor<T, Respon
             poiType.similar = poiType.similar.split(",");
         }
 
+        if (poiType.ggSimilar !== null) {
+            poiType.ggSimilar = poiType.ggSimilar.split(",");
+        }
+
         poiType.dateCreated = {
             readable: moment.unix(poiType.dateCreated).format("MMM Do YYYY"),
             timestamp: poiType.dateCreated

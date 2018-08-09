@@ -129,12 +129,45 @@ export class PoisResolver {
         }
     }
 
+    @Mutation("updatePoiTypeGgSimilar")
+    @Roles("isSuperUser")
+    @UseInterceptors(new PoiTypeTransformInterceptor())
+    async updatePoiTypeGgSimilar(_: any, { id, input }) {
+        try {
+            return await this.poiTypeService.updateGgSimilar(id, input.similar);
+        } catch (error) {
+            throw error;
+        }
+    }
+
     @Mutation("removePoiTypeSimilarItem")
     @Roles("isSuperUser")
     @UseInterceptors(new PoiTypeTransformInterceptor())
     async removePoiTypeSimilarItem(_: any, { id, input }) {
         try {
             return await this.poiTypeService.removeSimilarItem(id, input);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @Mutation("removePoiTypeGgSimilarItem")
+    @Roles("isSuperUser")
+    @UseInterceptors(new PoiTypeTransformInterceptor())
+    async removePoiTypeGgSimilarItem(_: any, { id, input }) {
+        try {
+            return await this.poiTypeService.removeGgSimilarItem(id, input);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @Mutation("removePoiType")
+    @Roles("isSuperUser")
+    @UseInterceptors(new PoiTypeTransformInterceptor())
+    async removePoiType(_: any, { id }) {
+        try {
+            return await this.poiTypeService.delete(id);
         } catch (error) {
             throw error;
         }

@@ -2,6 +2,7 @@ type PoiType {
   id: Int!
   name: String
   similar: [String!]
+  ggSimilar: [String!]
   dateCreated: JSON
 }
 
@@ -46,7 +47,10 @@ type Mutation {
   # importPoi: Int!
   importPoiType: Int!
   updatePoiTypeSimilar(id: Int!, input: JSON!): PoiType!
+  updatePoiTypeGgSimilar(id: Int!, input: JSON!): PoiType!
   removePoiTypeSimilarItem(id: Int!, input: JSON!): PoiType!
+  removePoiTypeGgSimilarItem(id: Int!, input: JSON!): PoiType!
+  removePoiType(id: Int!): Boolean!
   changePoiType(id: Int!, typeId: Int!): PoiInfo!
   uploadOctoparse(file: Upload): Int
   changeStatus(id: Int!, status: Int!): PoiInfo!

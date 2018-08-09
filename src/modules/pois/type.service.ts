@@ -85,6 +85,26 @@ export class PoiTypeService {
         }
     }
 
+    async updateGgSimilar(id: number, similar: any) {
+        try {
+            let newSimilarArr = [];
+            let myPoiType = await this.typeRepository.findOneOrFail(id);
+            const oldSimilar = await myPoiType.ggSimilar.split(",").map(s => {
+                return newSimilarArr.push(s);
+            });
+            const newSimilar = await similar.split(",").map(s => {
+                return newSimilarArr.push(s.trim());
+            });
+            await Promise.all([oldSimilar, newSimilar]);
+
+            myPoiType.ggSimilar = newSimilarArr.join(",");
+
+            return await this.typeRepository.save(myPoiType);
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async removeSimilarItem(id: number, similar: any) {
         try {
             let myPoiType = await this.typeRepository.findOneOrFail(id);
@@ -93,6 +113,21 @@ export class PoiTypeService {
             const index = similarArr.findIndex(similarName => similarName === similar.similarItem);
             similarArr.splice(index, 1);
             myPoiType.similar = similarArr.join(",");
+
+            return await this.typeRepository.save(myPoiType);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async removeGgSimilarItem(id: number, similar: any) {
+        try {
+            let myPoiType = await this.typeRepository.findOneOrFail(id);
+
+            let ggSimilarArr = myPoiType.ggSimilar.split(",");
+            const index = ggSimilarArr.findIndex(similarName => similarName === similar.similarItem);
+            ggSimilarArr.splice(index, 1);
+            myPoiType.ggSimilar = ggSimilarArr.join(",");
 
             return await this.typeRepository.save(myPoiType);
         } catch (error) {
@@ -116,6 +151,16 @@ export class PoiTypeService {
         }
     }
 
+    async delete(id: number) {
+        try {
+            const myType = await this.typeRepository.findOneOrFail(id);
+
+            return await myType.remove();
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async search(q: string) {
         try {
             let queryBuilder = bodybuilder();
@@ -131,7 +176,7 @@ export class PoiTypeService {
     async findOneBySimilar(name: string) {
         try {
             let qb = this.typeRepository.createQueryBuilder("poitype");
-                qb.where('FIND_IN_SET("' + name + '", poitype.similar)');
+            qb.where('FIND_IN_SET("' + name + '", poitype.similar)');
 
             return await qb.getOne();
         } catch (error) {
@@ -142,7 +187,7 @@ export class PoiTypeService {
     async findOneByGgSimilar(name: string) {
         try {
             let qb = this.typeRepository.createQueryBuilder("poitype");
-                qb.where('FIND_IN_SET("' + name + '", poitype.ggSimilar)');
+            qb.where('FIND_IN_SET("' + name + '", poitype.ggSimilar)');
 
             return await qb.getOne();
         } catch (error) {
