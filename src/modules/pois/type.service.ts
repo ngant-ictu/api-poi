@@ -163,11 +163,15 @@ export class PoiTypeService {
 
     async search(q: string) {
         try {
-            let queryBuilder = bodybuilder();
-            queryBuilder.query("match", "pt_name", q.trim());
-            // queryBuilder.query("match", "pt_similar", q.trim());
-            queryBuilder.size(10);
-            return await this.searchService.search({ index: "poi_type", body: queryBuilder.build() });
+            let qb = bodybuilder().query("multi_match", {
+                query: q.trim(),
+                fuzziness: 5,
+                prefix_length: 0,
+                type: "best_fields",
+                fields: ["pt_name", "pt_similar", "pt_gg_similar"]
+            });
+
+            return await this.searchService.search({ index: "poi_type", body: qb.build() });
         } catch (error) {
             console.trace(error.message);
         }

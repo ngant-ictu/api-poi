@@ -22,8 +22,15 @@ export class PoiTypeSearchTransformInterceptor<T> implements NestInterceptor {
     }
 
     private _transform(item) {
-        return { id: item.pt_id, name: item.pt_name, similar: item.pt_similar, dateCreated: { readable: moment
-                    .unix(item.pt_date_created)
-                    .format("MMM Do YYYY"), timestamp: item.pt_date_created } };
+        return {
+            id: item.pt_id,
+            name: item.pt_name,
+            similar: item.pt_similar,
+            ggSimilar: item.pt_gg_similar,
+            dateCreated: { readable: moment
+                .unix(item.pt_date_created)
+                .format("MMM Do YYYY"), timestamp: item.pt_date_created
+            }
+        };
     }
 }
