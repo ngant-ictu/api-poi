@@ -75,6 +75,25 @@ export class PoiInfoService {
         }
     }
 
+    async findOne(id: number) {
+        try {
+            return await this.infoRepository.findOneOrFail({
+                where: { id: id },
+                join: {
+                    alias: "poiinfo",
+                    leftJoinAndSelect: {
+                        region1: "poiinfo.ward",
+                        region2: "poiinfo.district",
+                        region3: "poiinfo.city",
+                        poitype: "poiinfo.type"
+                    }
+                }
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async create(formData: any) {
         let myInfo;
         myInfo = this.infoRepository.create(formData);

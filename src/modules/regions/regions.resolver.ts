@@ -3,9 +3,9 @@ import { Resolver, Query, Mutation } from "@nestjs/graphql";
 import { AuthGuard } from "../../guards/auth.guard";
 import { Roles } from "../../decorators/roles.decorator";
 import { RegionsService } from "./regions.service";
-
 import * as xlsx from "node-xlsx";
 import { dump } from "../../helpers/dump";
+import { listToTree } from "../../helpers/adj";
 
 @Resolver("Region")
 @UseGuards(AuthGuard)
@@ -45,5 +45,22 @@ export class RegionsResolver {
         return {
             count
         };
+    }
+
+    @Query("getTrees")
+    @Roles("isSuperUser")
+    async getTrees(_: any) {
+        try {
+            let output = [];
+            const myRegions = await this.regionsService.findAll({
+                cache: true
+            });
+
+            return await Promise.all(
+                output = listToTree(myRegions)
+            );
+        } catch (error) {
+            throw error;
+        }
     }
 }

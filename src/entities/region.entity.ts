@@ -16,6 +16,9 @@ export class Region extends BaseEntity {
     @Column({ name: "r_order" })
     order: number;
 
+    @Column({ name: "r_parent_id" })
+    parentId: number;
+
     @ManyToOne(type => Region, region => region.children)
     @JoinColumn({ name: "r_parent_id" })
     parent: Region;

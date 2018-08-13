@@ -193,6 +193,18 @@ export class PoisResolver {
         }
     }
 
+    @Query("getPoiInfo")
+    @Roles("isSuperUser")
+    @UseInterceptors(new PoiInfoTransformInterceptor())
+    async getPoiInfo(_: any, { id }) {
+        try {
+            const myPoiInfo = await this.poiInfoService.findOne(id);
+            return plainToClass(PoiInfo, myPoiInfo);
+        } catch (error) {
+            throw error;
+        }
+    }
+
     @Mutation("changePoiType")
     @Roles("isSuperUser")
     @UseInterceptors(new PoiInfoTransformInterceptor())

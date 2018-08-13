@@ -1,8 +1,16 @@
 type Region {
   id: Int!
   name: String
+  slug: String
+  order: Int
+  parentId: Int
+  children: JSON
+}
+
+type Query {
+  getTrees: [Region]
 }
 
 type Mutation {
-    importRegion: Int!
+  importRegion: Int!
 }

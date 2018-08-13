@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Repository, Brackets } from "typeorm";
+import { Repository, Brackets, getManager } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Region } from "../../entities/region.entity";
 
@@ -58,4 +58,5 @@ export class RegionsService {
     async findAll(formData: any) {
         return await this.regionRepository.find(formData);
     }
+
 }
