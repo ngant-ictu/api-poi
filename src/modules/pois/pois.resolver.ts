@@ -205,6 +205,17 @@ export class PoisResolver {
         }
     }
 
+    @Mutation("updatePoiInfo")
+    @Roles("isSuperUser")
+    @UseInterceptors(new PoiInfoTransformInterceptor())
+    async updatePoiInfo(_: any, { id, input }) {
+        try {
+            return await this.poiInfoService.update(id, input);
+        } catch (error) {
+            throw error;
+        }
+    }
+
     @Mutation("changePoiType")
     @Roles("isSuperUser")
     @UseInterceptors(new PoiInfoTransformInterceptor())

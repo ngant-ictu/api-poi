@@ -113,6 +113,38 @@ export class PoiInfoService {
         return myInfo;
     }
 
+    async update(id: number, formData: any) {
+        try {
+            let myPoiInfo = await this.infoRepository.findOneOrFail(id);
+            myPoiInfo.name = formData.name;
+            myPoiInfo.number = formData.number;
+            myPoiInfo.street = formData.street;
+            myPoiInfo.phoneNumber = formData.phoneNumber;
+
+            if (formData.region.length > 0) {
+                myPoiInfo.city = (typeof formData.region[0] !== 'undefined') ? formData.region[0] : null;
+                myPoiInfo.district = (typeof formData.region[1] !== 'undefined') ? formData.region[1] : null;
+                myPoiInfo.ward = (typeof formData.region[2] !== 'undefined') ? formData.region[2] : null;
+            }
+
+            await this.infoRepository.save(myPoiInfo);
+            return await this.infoRepository.findOneOrFail({
+                where: { id: id },
+                join: {
+                    alias: "poiinfo",
+                    leftJoinAndSelect: {
+                        region1: "poiinfo.ward",
+                        region2: "poiinfo.district",
+                        region3: "poiinfo.city",
+                        poitype: "poiinfo.type"
+                    }
+                }
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async changeType(id: number, typeId: number) {
         try {
             let myPoiInfo = await this.infoRepository.findOneOrFail(id);
