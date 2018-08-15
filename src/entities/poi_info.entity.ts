@@ -14,6 +14,7 @@ import { IsPoiAlreadyExist } from './validators/poi_info.is-already-exist';
 import { PoiOpeningHours } from "./poi_opening_hours.entity";
 import { Region } from "./region.entity";
 import { PoiType } from "./poi_type.entity";
+import { PoiNote } from "./poi_note.entity";
 
 enum Status {
     ACTIVE = <number>1,
@@ -77,7 +78,7 @@ export class PoiInfo extends BaseEntity {
     public status: number;
 
     @IsNotEmpty()
-    @IsPoiAlreadyExist({ message: 'Poi already existed.' })
+    @IsPoiAlreadyExist({ message: "Poi already existed." })
     @Column({ name: "pi_slug" })
     public slug: string;
 
@@ -106,6 +107,11 @@ export class PoiInfo extends BaseEntity {
     @OneToMany(type => PoiOpeningHours, hour => hour.poi)
     @JoinColumn({ name: "poh_id" })
     public openingHours: PoiOpeningHours[];
+
+    // Relation 1 poi has n notes
+    @OneToMany(type => PoiNote, note => note.poi)
+    @JoinColumn({ name: "pn_id" })
+    public notes: PoiNote[];
 
     @BeforeInsert()
     private createDate() {

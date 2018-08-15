@@ -15,6 +15,7 @@ import { dump } from "../../helpers/dump";
 import { RegionsService } from "../regions/regions.service";
 import { PoiOpeningHoursService } from "./opening_hours.service";
 import { PoiTypeService } from "./type.service";
+import { PoiNoteService } from "./note.service";
 
 @Injectable()
 export class PoiInfoService {
@@ -24,7 +25,8 @@ export class PoiInfoService {
         private readonly configService: ConfigService,
         private readonly regionsService: RegionsService,
         private readonly poiOpeningHoursService: PoiOpeningHoursService,
-        private readonly typeService: PoiTypeService
+        private readonly typeService: PoiTypeService,
+        private readonly noteService: PoiNoteService
     ) {}
 
     async findAll(options: { curPage: number; perPage: number; q?: string; group?: number; sort?: string }) {
@@ -35,6 +37,7 @@ export class PoiInfoService {
             qb = qb.leftJoinAndSelect("poiinfo.district", "region2");
             qb = qb.leftJoinAndSelect("poiinfo.city", "region3");
             qb = qb.leftJoinAndSelect("poiinfo.type", "poitype");
+            qb = qb.leftJoinAndSelect("poiinfo.notes", "poinote");
 
             if (options.q) {
                 qb = qb.where("poiinfo.name like :q or poiinfo.similar like :q or poiinfo.id = :id", {
@@ -85,7 +88,8 @@ export class PoiInfoService {
                         region1: "poiinfo.ward",
                         region2: "poiinfo.district",
                         region3: "poiinfo.city",
-                        poitype: "poiinfo.type"
+                        poitype: "poiinfo.type",
+                        poinote: "poiinfo.notes"
                     }
                 }
             });
@@ -136,7 +140,8 @@ export class PoiInfoService {
                         region1: "poiinfo.ward",
                         region2: "poiinfo.district",
                         region3: "poiinfo.city",
-                        poitype: "poiinfo.type"
+                        poitype: "poiinfo.type",
+                        poinote: "poiinfo.notes"
                     }
                 }
             });
@@ -159,7 +164,8 @@ export class PoiInfoService {
                         region1: "poiinfo.ward",
                         region2: "poiinfo.district",
                         region3: "poiinfo.city",
-                        poitype: "poiinfo.type"
+                        poitype: "poiinfo.type",
+                        poinote: "poiinfo.notes"
                     }
                 }
             });
@@ -182,7 +188,8 @@ export class PoiInfoService {
                         region1: "poiinfo.ward",
                         region2: "poiinfo.district",
                         region3: "poiinfo.city",
-                        poitype: "poiinfo.type"
+                        poitype: "poiinfo.type",
+                        poinote: "poiinfo.notes"
                     }
                 }
             });

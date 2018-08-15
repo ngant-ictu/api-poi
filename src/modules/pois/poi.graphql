@@ -23,6 +23,13 @@ type PoiInfo {
   rating: Float
   ggFullAddress: String
   status: Int!
+  notes: [PoiNote]
+  dateCreated: JSON
+}
+
+type PoiNote {
+  id: Int!
+  text: String
   dateCreated: JSON
 }
 
@@ -42,6 +49,7 @@ type Query {
   searchPoiTypes(q: String): [PoiType]
   getPoiInfos(opts: JSON!): PoiInfos
   getPoiInfo(id: Int!): PoiInfo
+  getPoiNotes(piid: Int!): [PoiNote]
 }
 
 type Mutation {
@@ -56,5 +64,6 @@ type Mutation {
   uploadOctoparse(file: Upload): Int
   changeStatus(id: Int!, status: Int!): PoiInfo!
   updatePoiInfo(id: Int!, input: JSON!): PoiInfo!
+  addPoiNote(input: JSON!): PoiNote
 }
 

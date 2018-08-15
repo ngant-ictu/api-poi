@@ -4,6 +4,7 @@ import { AuthGuard } from "../../guards/auth.guard";
 import { Roles } from "../../decorators/roles.decorator";
 import { PoiInfoService } from "./info.service";
 import { PoiTypeService } from "./type.service";
+import { PoiNoteService } from "./note.service";
 import { PoiType } from "../../entities/poi_type.entity";
 import { plainToClass } from "class-transformer";
 import { PoiTypeTransformInterceptor } from "../../interceptors/poi_type-transform.interceptor";
@@ -16,7 +17,11 @@ import * as GoogleMaps from "@google/maps";
 @Resolver("Poi")
 @UseGuards(AuthGuard)
 export class PoisResolver {
-    constructor(private readonly poiInfoService: PoiInfoService, private readonly poiTypeService: PoiTypeService) {}
+    constructor(
+        private readonly poiInfoService: PoiInfoService,
+        private readonly poiTypeService: PoiTypeService,
+        private readonly poiNoteService: PoiNoteService
+    ) {}
 
     @Mutation("importPoiType")
     @Roles("isSuperUser")
@@ -255,6 +260,29 @@ export class PoisResolver {
     async changeStatus(_: any, { id, status }) {
         try {
             return await this.poiInfoService.changeStatus(id, status);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @Mutation("addPoiNote")
+    @Roles("isSuperUser")
+    // @UseInterceptors(new PoiInfoTransformInterceptor())
+    async addPoiNote(_: any, { input }) {
+        try {
+            return await this.poiNoteService.create(input);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @Query("getPoiNotes")
+    @Roles("isSuperUser")
+    // @UseInterceptors(new PoiTypeSearchTransformInterceptor())
+    async getPoiNotes(_: any, { piid }) {
+        try {
+            const response = await this.poiNoteService.findAll(piid);
+            return response;
         } catch (error) {
             throw error;
         }
