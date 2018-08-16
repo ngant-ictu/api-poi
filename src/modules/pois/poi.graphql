@@ -64,6 +64,7 @@ type Mutation {
   uploadOctoparse(file: Upload): Int
   changeStatus(id: Int!, status: Int!): PoiInfo!
   updatePoiInfo(id: Int!, input: JSON!): PoiInfo!
-  addPoiNote(input: JSON!): PoiNote
+  addPoiNote(input: JSON!): PoiNote!
+  removePoiNote(id: Int!): Boolean!
 }
 

@@ -288,4 +288,15 @@ export class PoisResolver {
             throw error;
         }
     }
+
+    @Mutation("removePoiNote")
+    @Roles("isSuperUser")
+    @UseInterceptors(new PoiNoteTransformInterceptor())
+    async removePoiNote(_: any, { id }) {
+        try {
+            return await this.poiNoteService.delete(id);
+        } catch (error) {
+            throw error;
+        }
+    }
 }
