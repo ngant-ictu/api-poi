@@ -12,7 +12,12 @@ export class PoiNoteService {
 
     async findAll(piid: number) {
         try {
-            return this.noteRepository.find({ where: { piid: piid } });
+            return this.noteRepository.find({
+                where: { piid: piid },
+                order: {
+                    dateCreated: 'DESC'
+                }
+            });
         } catch (error) {
             throw error;
         }
@@ -28,6 +33,7 @@ export class PoiNoteService {
                 return await this.noteRepository.save(myNote);
             }
         } catch (error) {
+            console.dir(error)
             throw error;
         }
     }

@@ -10,6 +10,7 @@ import { plainToClass } from "class-transformer";
 import { PoiTypeTransformInterceptor } from "../../interceptors/poi_type-transform.interceptor";
 import { PoiTypeSearchTransformInterceptor } from "../../interceptors/poi_type-search-transform.interceptor";
 import { PoiInfoTransformInterceptor } from "../../interceptors/poi_info-transform.interceptor";
+import { PoiNoteTransformInterceptor } from "../../interceptors/poi_note-transform.interceptor";
 import { PoiInfo } from "../../entities/poi_info.entity";
 import * as xlsx from "node-xlsx";
 import * as GoogleMaps from "@google/maps";
@@ -267,7 +268,7 @@ export class PoisResolver {
 
     @Mutation("addPoiNote")
     @Roles("isSuperUser")
-    // @UseInterceptors(new PoiInfoTransformInterceptor())
+    @UseInterceptors(new PoiNoteTransformInterceptor())
     async addPoiNote(_: any, { input }) {
         try {
             return await this.poiNoteService.create(input);
@@ -278,7 +279,7 @@ export class PoisResolver {
 
     @Query("getPoiNotes")
     @Roles("isSuperUser")
-    // @UseInterceptors(new PoiTypeSearchTransformInterceptor())
+    @UseInterceptors(new PoiNoteTransformInterceptor())
     async getPoiNotes(_: any, { piid }) {
         try {
             const response = await this.poiNoteService.findAll(piid);
