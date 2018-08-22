@@ -22,11 +22,7 @@ export class AuthService {
         });
 
         if (!myUser) {
-            myUser = await this.userRepository.findOne({
-                where: {
-                    mobileNumber: credentials.userName
-                }
-            });
+            throw new UserException("user:notFound");
         }
 
         const matchedPassword = await myUser.comparePassword(credentials.password);

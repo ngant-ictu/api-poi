@@ -124,6 +124,7 @@ export class PoiInfoService {
             myPoiInfo.number = formData.number;
             myPoiInfo.street = formData.street;
             myPoiInfo.phoneNumber = formData.phoneNumber;
+            myPoiInfo.website = formData.website;
 
             if (formData.region.length > 0) {
                 myPoiInfo.city = (typeof formData.region[0] !== 'undefined') ? formData.region[0] : null;
