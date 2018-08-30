@@ -66,5 +66,6 @@ type Mutation {
   updatePoiInfo(id: Int!, input: JSON!): PoiInfo!
   addPoiNote(input: JSON!): PoiNote!
   removePoiNote(id: Int!): Boolean!
+  addPoiType(input: JSON!): PoiType!
 }
 

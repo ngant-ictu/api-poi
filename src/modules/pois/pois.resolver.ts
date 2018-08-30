@@ -168,6 +168,17 @@ export class PoisResolver {
         }
     }
 
+    @Mutation("addPoiType")
+    @Roles("isSuperUser")
+    @UseInterceptors(new PoiTypeTransformInterceptor())
+    async addPoiType(_: any, { input }) {
+        try {
+            return await this.poiTypeService.create(input);
+        } catch (error) {
+            throw error;
+        }
+    }
+
     @Mutation("removePoiType")
     @Roles("isSuperUser")
     @UseInterceptors(new PoiTypeTransformInterceptor())
