@@ -199,7 +199,8 @@ export class PoisResolver {
                 curPage: opts.curPage,
                 perPage: opts.perPage,
                 q: opts.q,
-                sort: opts.sort
+                sort: opts.sort,
+                poitype: opts.poitype
             });
             return {
                 items: plainToClass(PoiInfo, myPoiInfos.items),

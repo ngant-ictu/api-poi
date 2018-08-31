@@ -29,51 +29,56 @@ export class PoiInfoService {
         private readonly noteService: PoiNoteService
     ) {}
 
-    async findAll(options: { curPage: number; perPage: number; q?: string; group?: number; sort?: string }) {
+    async findAll(options: {
+        curPage: number;
+        perPage: number;
+        q?: string;
+        group?: number;
+        sort?: string;
+        poitype?: number;
+    }) {
         try {
-            let objects: [PoiInfo[], number];
-            let qb = this.infoRepository.createQueryBuilder("poiinfo");
-            qb = qb.leftJoinAndSelect("poiinfo.ward", "region1");
-            qb = qb.leftJoinAndSelect("poiinfo.district", "region2");
-            qb = qb.leftJoinAndSelect("poiinfo.city", "region3");
-            qb = qb.leftJoinAndSelect("poiinfo.type", "poitype");
-            qb = qb.leftJoinAndSelect("poiinfo.notes", "poinote");
+                let objects: [PoiInfo[], number];
+                let qb = this.infoRepository.createQueryBuilder("poiinfo");
+                qb = qb.leftJoinAndSelect("poiinfo.ward", "region1");
+                qb = qb.leftJoinAndSelect("poiinfo.district", "region2");
+                qb = qb.leftJoinAndSelect("poiinfo.city", "region3");
+                qb = qb.leftJoinAndSelect("poiinfo.type", "poitype");
+                qb = qb.leftJoinAndSelect("poiinfo.notes", "poinote");
 
-            if (options.q) {
-                qb = qb.where("poiinfo.name like :q or poiinfo.similar like :q or poiinfo.id = :id", {
-                    q: `%${options.q}%`,
-                    id: options.q
-                });
-            }
-
-            // sort
-            options.sort =
-                options.sort && new PoiInfo().hasOwnProperty(options.sort.replace("-", "")) ? options.sort : "-id";
-            const field = options.sort.replace("-", "");
-            if (options.sort) {
-                if (options.sort[0] === "-") {
-                    qb = qb.addOrderBy("poiinfo." + field, "DESC");
-                } else {
-                    qb = qb.addOrderBy("poiinfo." + field, "ASC");
+                if (options.q) {
+                    qb = qb.where("poiinfo.name like :q or poiinfo.id = :id", {
+                        q: `%${options.q}%`,
+                        id: options.q
+                    });
                 }
-            }
 
-            // offset & limit
-            qb = qb.skip((options.curPage - 1) * options.perPage).take(options.perPage);
-
-            // run query
-            objects = await qb.getManyAndCount();
-
-            return {
-                items: objects[0],
-                meta: {
-                    curPage: options.curPage,
-                    perPage: options.perPage,
-                    totalPages: options.perPage > objects[1] ? 1 : Math.ceil(objects[1] / options.perPage),
-                    totalResults: objects[1]
+                // filter by type
+                if (options.poitype) {
+                    qb = qb.andWhere("poiinfo.type = :poiTypeValue", {
+                        poiTypeValue: options.poitype
+                    });
                 }
-            };
-        } catch (error) {
+
+                // sort
+                options.sort = options.sort && new PoiInfo().hasOwnProperty(options.sort.replace("-", "")) ? options.sort : "-id";
+                const field = options.sort.replace("-", "");
+                if (options.sort) {
+                    if (options.sort[0] === "-") {
+                        qb = qb.addOrderBy("poiinfo." + field, "DESC");
+                    } else {
+                        qb = qb.addOrderBy("poiinfo." + field, "ASC");
+                    }
+                }
+
+                // offset & limit
+                qb = qb.skip((options.curPage - 1) * options.perPage).take(options.perPage);
+
+                // run query
+                objects = await qb.getManyAndCount();
+
+                return { items: objects[0], meta: { curPage: options.curPage, perPage: options.perPage, totalPages: options.perPage > objects[1] ? 1 : Math.ceil(objects[1] / options.perPage), totalResults: objects[1] } };
+            } catch (error) {
             throw error;
         }
     }
