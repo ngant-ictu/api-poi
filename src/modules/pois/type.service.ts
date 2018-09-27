@@ -69,6 +69,9 @@ export class PoiTypeService {
         try {
             let newSimilarArr = [];
             let myPoiType = await this.typeRepository.findOneOrFail(id);
+            if (myPoiType.similar === null) {
+                myPoiType.similar = '';
+            }
             const oldSimilar = await myPoiType.similar.split(",").map(s => {
                 return newSimilarArr.push(s);
             });
