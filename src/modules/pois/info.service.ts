@@ -38,47 +38,66 @@ export class PoiInfoService {
         poitype?: number;
     }) {
         try {
-                let objects: [PoiInfo[], number];
-                let qb = this.infoRepository.createQueryBuilder("poiinfo");
-                qb = qb.leftJoinAndSelect("poiinfo.ward", "region1");
-                qb = qb.leftJoinAndSelect("poiinfo.district", "region2");
-                qb = qb.leftJoinAndSelect("poiinfo.city", "region3");
-                qb = qb.leftJoinAndSelect("poiinfo.type", "poitype");
-                qb = qb.leftJoinAndSelect("poiinfo.notes", "poinote");
+            let objects: [PoiInfo[], number];
+            let qb = this.infoRepository.createQueryBuilder("poiinfo");
+            qb = qb.leftJoinAndSelect("poiinfo.ward", "region1");
+            qb = qb.leftJoinAndSelect("poiinfo.district", "region2");
+            qb = qb.leftJoinAndSelect("poiinfo.city", "region3");
+            qb = qb.leftJoinAndSelect("poiinfo.type", "poitype");
+            qb = qb.leftJoinAndSelect("poiinfo.notes", "poinote");
 
-                if (options.q) {
-                    qb = qb.where("poiinfo.name like :q or poiinfo.id = :id", {
-                        q: `%${options.q}%`,
-                        id: options.q
-                    });
+            if (options.q) {
+                qb = qb.where("poiinfo.name like :q or poiinfo.id = :id", {
+                    q: `%${options.q}%`,
+                    id: options.q
+                });
+            }
+
+            // filter by type
+            if (options.poitype) {
+                qb = qb.andWhere("poiinfo.type = :poiTypeValue", {
+                    poiTypeValue: options.poitype
+                });
+            }
+
+            // sort
+            options.sort =
+                options.sort && new PoiInfo().hasOwnProperty(options.sort.replace("-", "")) ? options.sort : "-id";
+            const field = options.sort.replace("-", "");
+            if (options.sort) {
+                if (options.sort[0] === "-") {
+                    qb = qb.addOrderBy("poiinfo." + field, "DESC");
+                } else {
+                    qb = qb.addOrderBy("poiinfo." + field, "ASC");
                 }
+            }
 
-                // filter by type
-                if (options.poitype) {
-                    qb = qb.andWhere("poiinfo.type = :poiTypeValue", {
-                        poiTypeValue: options.poitype
-                    });
+            // offset & limit
+            qb = qb.skip((options.curPage - 1) * options.perPage).take(options.perPage);
+
+            // run query
+            objects = await qb.getManyAndCount();
+
+            return {
+                items: objects[0],
+                meta: {
+                    curPage: options.curPage,
+                    perPage: options.perPage,
+                    totalPages: options.perPage > objects[1] ? 1 : Math.ceil(objects[1] / options.perPage),
+                    totalResults: objects[1]
                 }
+            };
+        } catch (error) {
+            throw error;
+        }
+    }
 
-                // sort
-                options.sort = options.sort && new PoiInfo().hasOwnProperty(options.sort.replace("-", "")) ? options.sort : "-id";
-                const field = options.sort.replace("-", "");
-                if (options.sort) {
-                    if (options.sort[0] === "-") {
-                        qb = qb.addOrderBy("poiinfo." + field, "DESC");
-                    } else {
-                        qb = qb.addOrderBy("poiinfo." + field, "ASC");
-                    }
-                }
-
-                // offset & limit
-                qb = qb.skip((options.curPage - 1) * options.perPage).take(options.perPage);
-
-                // run query
-                objects = await qb.getManyAndCount();
-
-                return { items: objects[0], meta: { curPage: options.curPage, perPage: options.perPage, totalPages: options.perPage > objects[1] ? 1 : Math.ceil(objects[1] / options.perPage), totalResults: objects[1] } };
-            } catch (error) {
+    async find(condition: {}) {
+        try {
+            return await this.infoRepository.find({
+                where: condition
+            });
+        } catch (error) {
             throw error;
         }
     }
@@ -132,9 +151,9 @@ export class PoiInfoService {
             myPoiInfo.website = formData.website;
 
             if (formData.region.length > 0) {
-                myPoiInfo.city = (typeof formData.region[0] !== 'undefined') ? formData.region[0] : null;
-                myPoiInfo.district = (typeof formData.region[1] !== 'undefined') ? formData.region[1] : null;
-                myPoiInfo.ward = (typeof formData.region[2] !== 'undefined') ? formData.region[2] : null;
+                myPoiInfo.city = typeof formData.region[0] !== "undefined" ? formData.region[0] : null;
+                myPoiInfo.district = typeof formData.region[1] !== "undefined" ? formData.region[1] : null;
+                myPoiInfo.ward = typeof formData.region[2] !== "undefined" ? formData.region[2] : null;
             }
 
             await this.infoRepository.save(myPoiInfo);

@@ -184,6 +184,14 @@ export class PoisResolver {
     @UseInterceptors(new PoiTypeTransformInterceptor())
     async removePoiType(_: any, { id }) {
         try {
+            const myPoiInfos = await this.poiInfoService.find({
+                type: id
+            });
+
+            myPoiInfos.map(async poiInfo => {
+                await this.poiInfoService.changeType(poiInfo.id, 0);
+            });
+
             return await this.poiTypeService.delete(id);
         } catch (error) {
             throw error;
