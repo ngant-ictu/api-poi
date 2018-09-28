@@ -11,7 +11,7 @@ import { PoiType } from "../poi_type.entity";
 export class IsTypeAlreadyExistConstraint implements ValidatorConstraintInterface {
     validate(name: string, args: ValidationArguments) {
         return PoiType.findOne({
-            name: name
+            name: `CONVERT('${name}', BINARY)`
         }).then(type => {
             if (type) return false;
             return true;
