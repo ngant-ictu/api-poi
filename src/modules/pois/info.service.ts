@@ -64,7 +64,7 @@ export class PoiInfoService {
 
             // sort
             options.sort =
-                options.sort && new PoiInfo().hasOwnProperty(options.sort.replace("-", "")) ? options.sort : "-id";
+                options.sort && new PoiInfo().hasOwnProperty(options.sort.replace("-", "")) ? options.sort : "id";
             const field = options.sort.replace("-", "");
             if (options.sort) {
                 if (options.sort[0] === "-") {
